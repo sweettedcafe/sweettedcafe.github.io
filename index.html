@@ -13,7 +13,6 @@
 
 :root{
 --cream:#f7fbf8;
---warm-white:#ffffff;
 --green-dark:#1f3d2b;
 --green:#2e7d5b;
 --green-light:#6bbf8f;
@@ -52,14 +51,9 @@ font-family:'Playfair Display',serif;
 font-size:18px;
 }
 
-.brand-icon{
-font-size:26px;
-}
+.brand-icon{font-size:26px}
 
-.nav-tabs{
-display:flex;
-gap:6px;
-}
+.nav-tabs{display:flex;gap:6px}
 
 .nav-tab{
 border:none;
@@ -76,17 +70,9 @@ background:var(--green);
 color:white;
 }
 
-.main{
-max-width:1200px;
-margin:auto;
-padding:26px;
-}
+.main{max-width:1100px;margin:auto;padding:26px}
 
-.grid-4{
-display:grid;
-grid-template-columns:repeat(4,1fr);
-gap:16px;
-}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 
 .card{
 background:white;
@@ -96,16 +82,13 @@ padding:18px;
 box-shadow:var(--shadow);
 }
 
-.stat-val{
-font-size:22px;
-font-weight:700;
-margin-top:4px;
-}
+.stat-val{font-size:22px;font-weight:700;margin-top:4px}
 
 .section-title{
 font-size:24px;
 font-family:'Playfair Display',serif;
 font-weight:700;
+margin-bottom:20px;
 }
 
 input{
@@ -133,13 +116,10 @@ color:var(--green);
 font-weight:600;
 }
 
-canvas{
-margin-top:10px;
-}
+.page{display:none}
+.page.active{display:block}
 
-button{
-cursor:pointer;
-}
+.search{margin:10px 0 14px}
 
 .btn{
 background:var(--green);
@@ -148,15 +128,12 @@ border:none;
 padding:8px 14px;
 border-radius:8px;
 font-weight:600;
+margin-top:10px;
 }
 
-.search{
-margin:10px 0 14px;
-}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+td,th{padding:8px;border-bottom:1px solid var(--border);text-align:left}
 
-@media(max-width:900px){
-.grid-4{grid-template-columns:1fr 1fr}
-}
 </style>
 </head>
 
@@ -170,22 +147,21 @@ margin:10px 0 14px;
 </div>
 
 <div class="nav-tabs">
-<button class="nav-tab active" onclick="showPage('dashboard')">Dashboard</button>
-<button class="nav-tab" onclick="showPage('ingredients')">Inventory</button>
-<button class="nav-tab" onclick="showPage('batches')">Batches</button>
-<button class="nav-tab" onclick="showPage('sales')">Sales</button>
+<button class="nav-tab active" onclick="showPage('dashboard',this)">Dashboard</button>
+<button class="nav-tab" onclick="showPage('ingredients',this)">Inventory</button>
+<button class="nav-tab" onclick="showPage('batches',this)">Batches</button>
+<button class="nav-tab" onclick="showPage('sales',this)">Sales</button>
 </div>
 
 </div>
-
 
 <div class="main">
 
-<div id="page-dashboard">
+<div id="dashboard" class="page active">
 
 <div class="section-title">Bakery Overview</div>
 
-<div class="grid-4" style="margin:20px 0">
+<div class="grid-4">
 
 <div class="card">
 <div>Ingredients</div>
@@ -209,11 +185,9 @@ margin:10px 0 14px;
 
 </div>
 
-<div class="card">
+<div class="card" style="margin-top:20px">
 
-<div style="display:flex;justify-content:space-between;align-items:center">
-<div style="font-weight:700">Recent Batches</div>
-</div>
+<b>Recent Batches</b>
 
 <input class="search" id="batchSearch" placeholder="Search batch..." oninput="renderDashboard()">
 
@@ -221,20 +195,56 @@ margin:10px 0 14px;
 
 </div>
 
+</div>
 
-<div class="card" style="margin-top:20px">
 
-<div style="font-weight:700">Profit Chart</div>
+<div id="ingredients" class="page">
+<div class="section-title">Ingredient Inventory</div>
 
-<canvas id="profitChart" height="120"></canvas>
+<input id="ingName" placeholder="Ingredient name">
+<input id="ingCost" placeholder="Cost">
+
+<button class="btn" onclick="addIngredient()">Add Ingredient</button>
+
+<table id="ingTable">
+<tr><th>Name</th><th>Cost</th></tr>
+</table>
 
 </div>
 
 
-</div>
+<div id="batches" class="page">
+<div class="section-title">Batch Production</div>
+
+<input id="batchName" placeholder="Batch name">
+<input id="batchYield" placeholder="Pieces produced">
+<input id="batchCost" placeholder="Total cost">
+
+<button class="btn" onclick="addBatch()">Create Batch</button>
+
+<table id="batchTable">
+<tr><th>Name</th><th>Yield</th><th>Cost</th></tr>
+</table>
 
 </div>
 
+
+<div id="sales" class="page">
+<div class="section-title">Sales</div>
+
+<input id="saleBatch" placeholder="Batch name">
+<input id="saleRevenue" placeholder="Revenue">
+<input id="saleProfit" placeholder="Profit">
+
+<button class="btn" onclick="addSale()">Record Sale</button>
+
+<table id="saleTable">
+<tr><th>Batch</th><th>Revenue</th><th>Profit</th></tr>
+</table>
+
+</div>
+
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -249,7 +259,100 @@ let ingredients=DB.load("ingredients")
 let batches=DB.load("batches")
 let sales=DB.load("sales")
 
-function showPage(){}
+function showPage(page,btn){
+
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
+document.getElementById(page).classList.add("active")
+
+document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"))
+btn.classList.add("active")
+
+}
+
+function addIngredient(){
+
+let name=document.getElementById("ingName").value
+let cost=parseFloat(document.getElementById("ingCost").value)||0
+
+ingredients.push({name,cost})
+
+DB.save("ingredients",ingredients)
+
+renderIngredients()
+renderDashboard()
+
+}
+
+function renderIngredients(){
+
+let html="<tr><th>Name</th><th>Cost</th></tr>"
+
+ingredients.forEach(i=>{
+html+=`<tr><td>${i.name}</td><td>₱${i.cost}</td></tr>`
+})
+
+document.getElementById("ingTable").innerHTML=html
+
+}
+
+function addBatch(){
+
+let name=document.getElementById("batchName").value
+let yieldQty=parseFloat(document.getElementById("batchYield").value)||0
+let cost=parseFloat(document.getElementById("batchCost").value)||0
+
+batches.push({
+name,
+yield:yieldQty,
+totalCost:cost,
+date:new Date().toLocaleDateString()
+})
+
+DB.save("batches",batches)
+
+renderBatches()
+renderDashboard()
+
+}
+
+function renderBatches(){
+
+let html="<tr><th>Name</th><th>Yield</th><th>Cost</th></tr>"
+
+batches.forEach(b=>{
+html+=`<tr><td>${b.name}</td><td>${b.yield}</td><td>₱${b.totalCost}</td></tr>`
+})
+
+document.getElementById("batchTable").innerHTML=html
+
+}
+
+function addSale(){
+
+let name=document.getElementById("saleBatch").value
+let revenue=parseFloat(document.getElementById("saleRevenue").value)||0
+let profit=parseFloat(document.getElementById("saleProfit").value)||0
+
+sales.push({batchName:name,revenue,profit})
+
+DB.save("sales",sales)
+
+renderSales()
+renderDashboard()
+
+}
+
+function renderSales(){
+
+let html="<tr><th>Batch</th><th>Revenue</th><th>Profit</th></tr>"
+
+sales.forEach(s=>{
+html+=`<tr><td>${s.batchName}</td><td>₱${s.revenue}</td><td>₱${s.profit}</td></tr>`
+})
+
+document.getElementById("saleTable").innerHTML=html
+
+}
 
 function renderDashboard(){
 
@@ -262,7 +365,7 @@ let profit=sales.reduce((a,b)=>a+b.profit,0)
 document.getElementById("d-revenue").textContent="₱"+revenue.toFixed(2)
 document.getElementById("d-profit").textContent="₱"+profit.toFixed(2)
 
-let search=document.getElementById("batchSearch").value.toLowerCase()
+let search=(document.getElementById("batchSearch")?.value||"").toLowerCase()
 
 let list=batches
 .filter(b=>b.name.toLowerCase().includes(search))
@@ -292,35 +395,11 @@ if(!html) html="<div style='padding:10px;color:#888'>No batches yet</div>"
 
 document.getElementById("recentBatches").innerHTML=html
 
-renderChart()
 }
 
-function renderChart(){
-
-let labels=sales.map(s=>s.batchName)
-let profits=sales.map(s=>s.profit)
-
-const ctx=document.getElementById('profitChart')
-
-if(window.chart) window.chart.destroy()
-
-window.chart=new Chart(ctx,{
-type:'bar',
-data:{
-labels:labels,
-datasets:[{
-label:'Profit',
-data:profits
-}]
-},
-options:{
-responsive:true,
-plugins:{legend:{display:false}}
-}
-})
-
-}
-
+renderIngredients()
+renderBatches()
+renderSales()
 renderDashboard()
 
 </script>
