@@ -41,7 +41,9 @@
   .stat-val { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--brown-dark); }
 
   .card { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
-  .card h3 { font-family: 'Playfair Display', serif; margin-bottom: 20px; font-size: 18px; }
+  .card h3 { font-family: 'Playfair Display', serif; margin-bottom: 5px; font-size: 18px; }
+
+  .filter-bar { background: var(--warm-white); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
 
   table { width: 100%; border-collapse: collapse; }
   th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #fafcfa; }
@@ -66,7 +68,7 @@
   .summary-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
   .summary-total { border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px; font-weight: 700; font-size: 16px; }
 
-  .action-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: white; font-size: 12px; }
+  .action-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: white; font-size: 12px; margin-right: 4px; }
   .btn-del { color: #d4856a; }
 
   .ing-header { display: flex; justify-content: space-between; align-items: center; background: #f1f7f2; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; }
@@ -79,7 +81,7 @@
 <div class="topbar">
   <div class="brand-block">
     <div class="logo-circle">🍪</div>
-    <div class="brand-text"><h1>SweetTed</h1><p>Cost & Pricing System</p></div>
+    <div class="brand-text"><h1>Sweet Ted</h1><p>Cost & Pricing System</p></div>
   </div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('dashboard')">📊 Dashboard</button>
@@ -133,6 +135,19 @@
       <h2 style="font-family:'Playfair Display'; font-size:24px;">Batch Records</h2>
       <button class="btn btn-primary" onclick="openBatchModal()">+ New Batch</button>
     </div>
+
+    <div class="filter-bar">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label class="form-label" style="margin-bottom:0;">From:</label>
+        <input type="date" id="filter-from" class="form-input" style="margin-bottom:0; width:150px;" onchange="renderBatches()">
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <label class="form-label" style="margin-bottom:0;">To:</label>
+        <input type="date" id="filter-to" class="form-input" style="margin-bottom:0; width:150px;" onchange="renderBatches()">
+      </div>
+      <button class="btn btn-ghost" style="padding:8px 12px;" onclick="clearFilters()">Clear</button>
+    </div>
+
     <div id="batch-list-container"></div>
   </div>
 
@@ -203,7 +218,7 @@
       </div>
 
       <div class="form-row">
-        <div class="form-group"><label class="form-label">DATE</label><input type="date" id="b-date" class="form-input"></div>
+        <div class="form-group"><label class="form-label">DATE</label><input type="date" id="b-date" class="form-input" required></div>
         <div class="form-group"><label class="form-label">YIELD (PCS)</label><input type="number" id="b-yield" class="form-input" oninput="calculateBatch()" required></div>
       </div>
 
@@ -294,6 +309,12 @@ function toggleIngredients() {
   icon.innerText = content.classList.contains('minimized') ? '▶' : '▼';
 }
 
+function clearFilters() {
+    document.getElementById('filter-from').value = "";
+    document.getElementById('filter-to').value = "";
+    renderBatches();
+}
+
 async function handleSaveIngredient(event) {
   event.preventDefault();
   const id = document.getElementById('ing-id').value;
@@ -334,8 +355,9 @@ function handleBatchSelect() {
   
   const inputs = ['b-yield', 'b-labor', 'b-overhead', 'b-packaging', 'b-markup'];
   
-  if (name === "Others") {
-    manualName.style.display = "block";
+  const presets = ["Cookies", "Cookies Premium", "Brownies", "Crinkles"];
+  if (name === "Others" || !presets.includes(name)) {
+    manualName.style.display = (name === "Others") ? "block" : "none";
     inputs.forEach(id => document.getElementById(id).readOnly = false);
   } else {
     manualName.style.display = "none";
@@ -349,11 +371,10 @@ function handleBatchSelect() {
   calculateBatch();
 }
 
-function addBatchIngRow() {
+function addBatchIngRow(ingId = null, qty = null) {
   const row = document.createElement('div'); row.className = 'form-row ing-usage-row';
-  let opts = ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}">${i.name}</option>`).join('');
-  // UPDATED: Added step="any" to allow decimals
-  row.innerHTML = `<select class="form-input use-sel" style="flex:2;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select><input type="number" step="any" class="form-input use-qty" style="flex:1;" placeholder="Qty" oninput="calculateBatch()">`;
+  let opts = ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}" ${i.id == ingId ? 'selected' : ''}>${i.name}</option>`).join('');
+  row.innerHTML = `<select class="form-input use-sel" style="flex:2;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select><input type="number" step="any" class="form-input use-qty" style="flex:1;" placeholder="Qty" value="${qty || ''}" oninput="calculateBatch()">`;
   document.getElementById('batch-ing-rows').appendChild(row);
 }
 
@@ -367,8 +388,9 @@ function calculateBatch() {
   });
 
   let labor, overhead, packaging;
+  const presets = ["Cookies", "Cookies Premium", "Brownies", "Crinkles"];
 
-  if (nameSel !== "Others") {
+  if (presets.includes(nameSel)) {
     labor = ingTotal * 0.50;
     overhead = ingTotal * 0.20;
     packaging = 50;
@@ -401,12 +423,21 @@ function calculateBatch() {
 
 async function handleSaveBatch(event) {
   event.preventDefault();
+  const id = document.getElementById('batch-id').value;
   const nameSel = document.getElementById('b-name').value;
   const finalName = nameSel === "Others" ? document.getElementById('b-name-manual').value : nameSel;
+
+  const ingredientsUsed = [];
+  document.querySelectorAll('.ing-usage-row').forEach(row => {
+    const sel = row.querySelector('.use-sel');
+    const q = parseFloat(row.querySelector('.use-qty').value);
+    if(sel.value && q > 0) ingredientsUsed.push({ id: sel.value, qty: q });
+  });
 
   const data = {
     name: finalName,
     destination: document.getElementById('b-destination').value,
+    date: document.getElementById('b-date').value,
     yield_pcs: parseFloat(document.getElementById('b-yield').value),
     labor_cost: parseFloat(document.getElementById('b-labor').value) || 0,
     overhead_cost: parseFloat(document.getElementById('b-overhead').value) || 0,
@@ -414,23 +445,66 @@ async function handleSaveBatch(event) {
     cafe_percentage_cost: parseFloat(document.getElementById('sum-cafe').innerText.replace('₱','')),
     total_cost: parseFloat(document.getElementById('sum-total').innerText.replace('₱','')),
     suggested_price: parseFloat(document.getElementById('sum-suggested').innerText.replace('₱','')),
-    markup_percent: parseFloat(document.getElementById('b-markup').value) || 0
+    markup_percent: parseFloat(document.getElementById('b-markup').value) || 0,
+    markup_value: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')),
+    ingredients_used: ingredientsUsed
   };
   
-  const { error } = await _sb.from('batches').insert([data]);
-  if (error) {
-    alert("Error saving: " + error.message);
+  let error;
+  if (id) {
+    const { error: err } = await _sb.from('batches').update(data).eq('id', id);
+    error = err;
   } else {
-    closeModal('modal-batch'); loadData();
+    const { error: err } = await _sb.from('batches').insert([data]);
+    error = err;
   }
+
+  if (error) alert("Error saving: " + error.message);
+  else { closeModal('modal-batch'); loadData(); }
 }
 
-function openBatchModal() {
+function openBatchModal(id = null, duplicate = false) {
   document.querySelector('#modal-batch form').reset();
   document.getElementById('batch-ing-rows').innerHTML = "";
   document.getElementById('b-name-manual').style.display = "none";
   document.getElementById('ing-section-content').classList.remove('minimized');
-  addBatchIngRow(); openModal('modal-batch');
+  
+  if (id) {
+    const b = batches.find(x => x.id == id);
+    document.getElementById('batch-id').value = duplicate ? "" : b.id;
+    document.getElementById('modal-batch-title').innerText = duplicate ? "Duplicate Batch" : "Edit Batch";
+    
+    const nameDropdown = document.getElementById('b-name');
+    const isPreset = Array.from(nameDropdown.options).some(opt => opt.value === b.name);
+    
+    if (isPreset) {
+        nameDropdown.value = b.name;
+    } else {
+        nameDropdown.value = "Others";
+        document.getElementById('b-name-manual').style.display = "block";
+        document.getElementById('b-name-manual').value = b.name;
+    }
+
+    document.getElementById('b-destination').value = b.destination || "Online Orders";
+    document.getElementById('b-date').value = b.date || "";
+    document.getElementById('b-yield').value = b.yield_pcs;
+    document.getElementById('b-labor').value = b.labor_cost;
+    document.getElementById('b-overhead').value = b.overhead_cost;
+    document.getElementById('b-packaging').value = b.packaging_cost;
+    document.getElementById('b-markup').value = b.markup_percent;
+
+    if (b.ingredients_used && Array.isArray(b.ingredients_used)) {
+        b.ingredients_used.forEach(ing => addBatchIngRow(ing.id, ing.qty));
+    } else { addBatchIngRow(); }
+    
+    handleBatchSelect();
+  } else {
+    document.getElementById('batch-id').value = "";
+    document.getElementById('modal-batch-title').innerText = "New Batch";
+    document.getElementById('b-date').value = new Date().toISOString().split('T')[0];
+    addBatchIngRow();
+  }
+  openModal('modal-batch');
 }
 
 function openSalesModal(id) {
@@ -478,7 +552,7 @@ function renderDashboard(sData) {
     <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
       <div>
         <div style="font-weight:600;">${b.name}</div>
-        <div style="font-size:12px; color:var(--text-muted);">Yield: ${b.yield_pcs} pcs | ${b.destination || 'Online'}</div>
+        <div style="font-size:12px; color:var(--text-muted);">${b.date || ''} | Yield: ${b.yield_pcs} pcs</div>
       </div>
       <div style="font-weight:700;">₱${b.total_cost.toFixed(2)}</div>
     </div>`).join('') || '<p style="color:var(--text-muted);">No batches yet.</p>';
@@ -499,24 +573,46 @@ function renderInventory() {
 }
 
 function renderBatches() {
-  document.getElementById('batch-list-container').innerHTML = batches.map(b => `
+  const from = document.getElementById('filter-from').value;
+  const to = document.getElementById('filter-to').value;
+  
+  const filtered = batches.filter(b => {
+    if (!from && !to) return true;
+    const d = b.date;
+    if (from && d < from) return false;
+    if (to && d > to) return false;
+    return true;
+  });
+
+  document.getElementById('batch-list-container').innerHTML = filtered.map(b => `
     <div class="card">
       <div style="display:flex; justify-content:space-between;">
         <div>
-          <h3 style="margin-bottom:4px;">${b.name}</h3>
-          <span style="font-size:12px; background:var(--sage-bg); padding:2px 8px; border-radius:4px; color:var(--sage); font-weight:600;">${b.destination || 'Online Orders'}</span>
+          <h3>${b.name}</h3>
+          <div style="margin-bottom:8px;">
+            <span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700; margin-right:5px;">${b.destination || 'Online'}</span>
+            <span style="font-size:11px; color:var(--text-muted); font-weight:600;">📅 ${b.date || 'No Date'}</span>
+          </div>
         </div>
-        <button class="btn btn-sales-trigger" onclick="openSalesModal(${b.id})">+ Record Sales</button>
+        <div>
+            <button class="btn btn-sales-trigger" onclick="openSalesModal(${b.id})">+ Record Sales</button>
+        </div>
       </div>
-      <div style="display:grid; grid-template-columns:repeat(3,1fr); margin-top:15px; border-top:1px solid var(--border); padding-top:15px;">
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); margin-top:10px; border-top:1px solid var(--border); padding-top:15px; font-size:13px;">
         <div>Yield: <b>${b.yield_pcs} pcs</b></div>
+        <div>Cost/Pc: <b>₱${(b.total_cost/b.yield_pcs).toFixed(2)}</b></div>
+        <div style="color:var(--rose);">Markup: <b>₱${(b.markup_value || 0).toFixed(2)}</b></div>
         <div>Total Cost: <b>₱${b.total_cost.toFixed(2)}</b></div>
-        <div>Price/Pc: <b>₱${b.suggested_price.toFixed(2)}</b></div>
       </div>
-      <div style="margin-top:15px; text-align:right;">
-        <button class="action-btn btn-del" onclick="deleteItem('batches',${b.id})">Delete Batch</button>
+      <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="color:var(--sage); font-weight:700;">Price/Pc: ₱${b.suggested_price.toFixed(2)}</div>
+        <div>
+          <button class="action-btn" onclick="openBatchModal(${b.id})">Edit</button>
+          <button class="action-btn" onclick="openBatchModal(${b.id}, true)">Duplicate</button>
+          <button class="action-btn btn-del" onclick="deleteItem('batches',${b.id})">Delete</button>
+        </div>
       </div>
-    </div>`).join('');
+    </div>`).join('') || '<div class="card" style="text-align:center; color:var(--text-muted);">No batches found for this period.</div>';
 }
 
 function renderSales(sData) {
@@ -528,7 +624,7 @@ function renderSales(sData) {
   }
 }
 
-async function deleteItem(tbl, id) { if(confirm("Delete?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
+async function deleteItem(tbl, id) { if(confirm("Delete this record?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
 
 loadData();
 </script>
