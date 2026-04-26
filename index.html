@@ -371,19 +371,22 @@ async function handleSaveIngredient(event) {
   event.preventDefault();
   const id = document.getElementById('ing-id').value;
   
-  // Calculate Cost Per Unit (CPU)
+  // Get values from the new form fields
   const costBulk = parseFloat(document.getElementById('i-cost-bulk').value) || 0;
   const qtyBulk = parseFloat(document.getElementById('i-qty-bulk').value) || 1;
   const calculatedCpu = costBulk / qtyBulk;
+  const lowStock = parseFloat(document.getElementById('i-alert').value) || 0;
 
+  // The 'data' keys must match your Supabase column names exactly
   const data = {
     name: document.getElementById('i-name').value,
     category: document.getElementById('i-category').value,
     unit: document.getElementById('i-unit').value,
-    cpu: calculatedCpu, // Saving the calculated unit cost
-    stock: parseFloat(document.getElementById('i-stock').value)
-    // If your DB has an 'alert_level' column, add it here:
-    // low_stock_threshold: parseFloat(document.getElementById('i-alert').value)
+    cpu: calculatedCpu,             // The calculated cost per unit
+    cost_buy: costBulk,             // FIX: Matching the error message column
+    buy_qty: qtyBulk,               // Storing the purchase quantity
+    stock: parseFloat(document.getElementById('i-stock').value),
+    low_stock: lowStock             // Storing the alert level
   };
   
   let error;
@@ -395,8 +398,12 @@ async function handleSaveIngredient(event) {
     error = err;
   }
 
-  if (error) alert("Error saving ingredient: " + error.message);
-  else { closeModal('modal-ing'); loadData(); }
+  if (error) {
+    alert("Error saving ingredient: " + error.message);
+  } else { 
+    closeModal('modal-ing'); 
+    loadData(); 
+  }
 }
 // ------------------------------------
 
