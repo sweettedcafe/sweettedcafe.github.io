@@ -403,7 +403,7 @@ async function handleSaveBatch(event) {
     total_cost: parseFloat(document.getElementById('sum-total').innerText.replace('₱','')),
     suggested_price: parseFloat(document.getElementById('sum-suggested').innerText.replace('₱','')),
     markup_percent: parseFloat(document.getElementById('b-markup').value) || 0,
-    markup_value: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')),
+    markup_percent: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')),
     ingredients_used: ingredientsUsed // Saved as JSONB array
   };
   
