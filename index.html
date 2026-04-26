@@ -184,6 +184,42 @@
   </div>
 </div>
 
+<div id="modal-ing" class="modal-bg">
+  <div class="modal">
+    <h2 id="modal-ing-title" style="font-family:'Playfair Display'; margin-bottom:20px;">Add Ingredient</h2>
+    <form onsubmit="handleSaveIngredient(event)">
+      <input type="hidden" id="ing-id">
+      <label class="form-label">Ingredient Name</label>
+      <input type="text" id="i-name" class="form-input" required placeholder="e.g. Bread Flour">
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select id="i-cat" class="form-input">
+            <option>Flour & Grains</option><option>Sugars & Sweeteners</option>
+            <option>Dairy & Fats</option><option>Chocolates & Toppings</option>
+            <option>Leavening & Others</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit</label>
+          <select id="i-unit" class="form-input"><option>g</option><option>ml</option><option>pcs</option></select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Cost per Unit (₱)</label><input type="number" step="any" id="i-cpu" class="form-input" required></div>
+        <div class="form-group"><label class="form-label">Current Stock</label><input type="number" step="any" id="i-stock" class="form-input" required></div>
+      </div>
+      
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('modal-ing')">Cancel</button>
+        <button type="submit" class="btn btn-save">Save Ingredient</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="modal-batch" class="modal-bg">
   <div class="modal">
     <h2 id="modal-batch-title" style="font-family:'Playfair Display'; margin-bottom:20px;">New Batch</h2>
@@ -281,6 +317,41 @@ function showPage(p) {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
+// INGREDIENT FUNCTIONS
+function openIngModal(id = null) {
+  document.querySelector('#modal-ing form').reset();
+  if (id) {
+    const i = ingredients.find(x => x.id == id);
+    document.getElementById('ing-id').value = i.id;
+    document.getElementById('i-name').value = i.name;
+    document.getElementById('i-cat').value = i.category;
+    document.getElementById('i-unit').value = i.unit;
+    document.getElementById('i-cpu').value = i.cpu;
+    document.getElementById('i-stock').value = i.stock;
+    document.getElementById('modal-ing-title').innerText = "Edit Ingredient";
+  } else {
+    document.getElementById('ing-id').value = "";
+    document.getElementById('modal-ing-title').innerText = "Add Ingredient";
+  }
+  openModal('modal-ing');
+}
+
+async function handleSaveIngredient(event) {
+  event.preventDefault();
+  const id = document.getElementById('ing-id').value;
+  const data = {
+    name: document.getElementById('i-name').value,
+    category: document.getElementById('i-cat').value,
+    unit: document.getElementById('i-unit').value,
+    cpu: parseFloat(document.getElementById('i-cpu').value),
+    stock: parseFloat(document.getElementById('i-stock').value)
+  };
+  if (id) await _sb.from('ingredients').update(data).eq('id', id);
+  else await _sb.from('ingredients').insert([data]);
+  closeModal('modal-ing'); loadData();
+}
+
+// BATCH FUNCTIONS
 function toggleIngredients() {
   const content = document.getElementById('ing-section-content');
   const icon = document.getElementById('ing-toggle-icon');
@@ -322,7 +393,6 @@ function handleBatchSelect() {
 
 function addBatchIngRow(ingId = null, qty = null) {
   const row = document.createElement('div'); row.className = 'form-row ing-usage-row';
-  // Critical fix: Ensure options are generated from the globally loaded ingredients array
   let opts = ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}" ${i.id == ingId ? 'selected' : ''}>${i.name}</option>`).join('');
   row.innerHTML = `<select class="form-input use-sel" style="flex:2;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select><input type="number" step="any" class="form-input use-qty" style="flex:1;" placeholder="Qty" value="${qty || ''}" oninput="calculateBatch()">`;
   document.getElementById('batch-ing-rows').appendChild(row);
@@ -460,7 +530,6 @@ function openBatchModal(id = null, duplicate = false) {
     document.getElementById('batch-id').value = "";
     document.getElementById('modal-batch-title').innerText = "New Batch";
     document.getElementById('b-date').value = new Date().toISOString().split('T')[0];
-    // This is the fix: Specifically call addBatchIngRow for new batches
     addBatchIngRow();
     handleBatchSelect();
   }
@@ -497,9 +566,6 @@ function renderBatches() {
             <span style="font-size:11px; color:var(--text-muted); font-weight:600;">📅 ${b.date || 'No Date'}</span>
           </div>
         </div>
-        <div>
-            <button class="btn btn-sales-trigger" onclick="openSalesModal(${b.id})">+ Record Sales</button>
-        </div>
       </div>
 
       <div class="batch-summary-grid">
@@ -528,6 +594,7 @@ function renderBatches() {
 }
 
 async function deleteItem(tbl, id) { if(confirm("Delete this record?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
+
 function renderDashboard(sData) {
   document.getElementById('d-ing').innerText = ingredients.length;
   document.getElementById('d-batch').innerText = batches.length;
@@ -542,11 +609,13 @@ function renderDashboard(sData) {
       <div style="font-weight:700;">₱${b.total_cost.toFixed(2)}</div>
     </div>`).join('') || '<p style="color:var(--text-muted);">No batches yet.</p>';
 }
+
 function renderInventory() {
   document.getElementById('ing-table-body').innerHTML = ingredients.map(i => `
     <tr><td>${i.name}</td><td>${i.category}</td><td>${i.unit}</td><td>₱${i.cpu.toFixed(2)}</td><td>${i.stock}</td><td>₱${(i.cpu*i.stock).toFixed(2)}</td>
     <td><button class="action-btn" onclick="openIngModal(${i.id})">Edit</button> <button class="action-btn btn-del" onclick="deleteItem('ingredients',${i.id})">Del</button></td></tr>`).join('');
 }
+
 function renderSales(sData) {
   const body = document.getElementById('sales-table-body');
   if (body) {
