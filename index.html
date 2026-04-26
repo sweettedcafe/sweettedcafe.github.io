@@ -386,7 +386,7 @@ async function handleSaveIngredient(event) {
     cost_buy: costBulk,             // FIX: Matching the error message column
     qty_buy: qtyBulk,               // Storing the purchase quantity
     stock: parseFloat(document.getElementById('i-stock').value),
-    low_stock: lowStock             // Storing the alert level
+    low_stock_threshold: lowStock             // Storing the alert level
   };
   
   let error;
