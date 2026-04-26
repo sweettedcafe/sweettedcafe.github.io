@@ -520,10 +520,10 @@ function renderBatches() {
         <div>
           <button class="action-btn" onclick="openBatchModal(${b.id})">Edit</button>
           <button class="action-btn" onclick="openBatchModal(${b.id}, true)">Duplicate</button>
-          <button class="action-btn btn-del" onclick="deleteItem('batches',${b.id})">Delete</button>
         </div>
       </div>
-    </div>`;
+    </div>
+    `;
   }).join('') || '<div class="card" style="text-align:center; color:var(--text-muted);">No batches found matching these filters.</div>';
 }
 
@@ -556,6 +556,7 @@ function renderSales(sData) {
   }
 }
 loadData();
+  document.addEventListener("DOMContentLoaded", loadData);
 </script>
 </body>
 </html>
