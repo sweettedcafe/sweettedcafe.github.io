@@ -181,9 +181,12 @@
           <select id="b-name" class="form-input" onchange="handleBatchSelect()">
             <option value="">Select Item</option>
             <option value="Cookies">Cookies</option>
+            <option value="Cookies Premium">Cookies Premium</option>
             <option value="Brownies">Brownies</option>
             <option value="Crinkles">Crinkles</option>
+            <option value="Others">Others (Manual Input)</option>
           </select>
+          <input type="text" id="b-name-manual" class="form-input" placeholder="Enter Batch Name" style="display:none; margin-top: -10px;">
         </div>
         <div class="form-group" style="flex: 1;">
           <label class="form-label">DESTINATION</label>
@@ -206,17 +209,17 @@
       <div id="batch-ing-rows"></div>
       
       <div class="form-row" style="margin-top:15px;">
-        <div class="form-group"><label class="form-label">LABOR (50%)</label><input type="number" id="b-labor" class="form-input" readonly></div>
-        <div class="form-group"><label class="form-label">OVERHEAD (20%)</label><input type="number" id="b-overhead" class="form-input" readonly></div>
-        <div class="form-group"><label class="form-label">PACKAGING</label><input type="number" id="b-packaging" class="form-input" readonly></div>
+        <div class="form-group"><label class="form-label">LABOR</label><input type="number" step="0.01" id="b-labor" class="form-input" oninput="calculateBatch()" readonly></div>
+        <div class="form-group"><label class="form-label">OVERHEAD</label><input type="number" step="0.01" id="b-overhead" class="form-input" oninput="calculateBatch()" readonly></div>
+        <div class="form-group"><label class="form-label">PACKAGING</label><input type="number" step="0.01" id="b-packaging" class="form-input" oninput="calculateBatch()" readonly></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">MARKUP %</label><input type="number" id="b-markup" class="form-input" value="40" oninput="calculateBatch()"></div>
+        <div class="form-group"><label class="form-label">MARKUP %</label><input type="number" id="b-markup" class="form-input" value="40" oninput="calculateBatch()" readonly></div>
       </div>
       <div class="summary-box">
         <div class="summary-item"><span>Ingredient cost</span><span id="sum-ing">₱0.00</span></div>
-        <div class="summary-item"><span>Labor (50%)</span><span id="sum-labor">₱0.00</span></div>
-        <div class="summary-item"><span>Overhead (20%)</span><span id="sum-overhead">₱0.00</span></div>
+        <div class="summary-item"><span>Labor</span><span id="sum-labor">₱0.00</span></div>
+        <div class="summary-item"><span>Overhead</span><span id="sum-overhead">₱0.00</span></div>
         <div class="summary-item"><span>Packaging</span><span id="sum-packaging">₱0.00</span></div>
         <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 5px;"><span>Cafe Percentage (10%)</span><span id="sum-cafe">₱0.00</span></div>
         <div class="summary-item summary-total"><span>Total Batch Cost</span><span id="sum-total">₱0.00</span></div>
@@ -273,7 +276,6 @@ function showPage(p) {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-/* INVENTORY LOGIC */
 async function handleSaveIngredient(event) {
   event.preventDefault();
   const id = document.getElementById('ing-id').value;
@@ -306,14 +308,28 @@ function openIngModal(id = null) {
   openModal('modal-ingr');
 }
 
-/* BATCH LOGIC - NEW AUTO GENERATION */
+/* BATCH LOGIC - UPDATED FOR NEW YIELDS, MARKUPS, AND MANUAL OPTION */
 function handleBatchSelect() {
   const name = document.getElementById('b-name').value;
   const yieldInput = document.getElementById('b-yield');
+  const markupInput = document.getElementById('b-markup');
+  const manualName = document.getElementById('b-name-manual');
   
-  if (name === "Brownies") yieldInput.value = 12;
-  else if (name === "Crinkles") yieldInput.value = 50;
-  else if (name === "Cookies") yieldInput.value = 10;
+  // Reset read-only status
+  const inputs = ['b-yield', 'b-labor', 'b-overhead', 'b-packaging', 'b-markup'];
+  
+  if (name === "Others") {
+    manualName.style.display = "block";
+    inputs.forEach(id => document.getElementById(id).readOnly = false);
+  } else {
+    manualName.style.display = "none";
+    inputs.forEach(id => document.getElementById(id).readOnly = true);
+    
+    if (name === "Cookies") { yieldInput.value = 15; markupInput.value = 70; }
+    else if (name === "Cookies Premium") { yieldInput.value = 15; markupInput.value = 75; }
+    else if (name === "Brownies") { yieldInput.value = 12; markupInput.value = 50; }
+    else if (name === "Crinkles") { yieldInput.value = 10; markupInput.value = 53; }
+  }
   
   calculateBatch();
 }
@@ -326,6 +342,7 @@ function addBatchIngRow() {
 }
 
 function calculateBatch() {
+  const nameSel = document.getElementById('b-name').value;
   let ingTotal = 0;
   document.querySelectorAll('.ing-usage-row').forEach(row => {
     const sel = row.querySelector('.use-sel');
@@ -333,49 +350,53 @@ function calculateBatch() {
     ingTotal += cpu * (parseFloat(row.querySelector('.use-qty').value) || 0);
   });
 
-  // AUTO CALCULATIONS
-  const labor = ingTotal * 0.50;
-  const overhead = ingTotal * 0.20;
-  const packaging = 50;
-  
-  // CAFE PERCENTAGE (10% of Ingredients + Labor + Overhead + Packaging)
+  let labor, overhead, packaging;
+
+  if (nameSel !== "Others") {
+    labor = ingTotal * 0.50;
+    overhead = ingTotal * 0.20;
+    packaging = 50;
+    document.getElementById('b-labor').value = labor.toFixed(2);
+    document.getElementById('b-overhead').value = overhead.toFixed(2);
+    document.getElementById('b-packaging').value = packaging.toFixed(2);
+  } else {
+    labor = parseFloat(document.getElementById('b-labor').value) || 0;
+    overhead = parseFloat(document.getElementById('b-overhead').value) || 0;
+    packaging = parseFloat(document.getElementById('b-packaging').value) || 0;
+  }
+
   const baseSubtotal = ingTotal + labor + overhead + packaging;
   const cafePercentage = baseSubtotal * 0.10;
-
-  const yieldV = parseFloat(document.getElementById('b-yield').value) || 1;
-  const markup = parseFloat(document.getElementById('b-markup').value) || 40;
-  
-  // Set values to read-only inputs
-  document.getElementById('b-labor').value = labor.toFixed(2);
-  document.getElementById('b-overhead').value = overhead.toFixed(2);
-  document.getElementById('b-packaging').value = packaging.toFixed(2);
-
   const total = baseSubtotal + cafePercentage;
 
-  // Update Summary Display
+  const yieldV = parseFloat(document.getElementById('b-yield').value) || 1;
+  const markup = parseFloat(document.getElementById('b-markup').value) || 0;
+
   document.getElementById('sum-ing').innerText = "₱" + ingTotal.toFixed(2);
   document.getElementById('sum-labor').innerText = "₱" + labor.toFixed(2);
   document.getElementById('sum-overhead').innerText = "₱" + overhead.toFixed(2);
   document.getElementById('sum-packaging').innerText = "₱" + packaging.toFixed(2);
   document.getElementById('sum-cafe').innerText = "₱" + cafePercentage.toFixed(2);
-  
   document.getElementById('sum-total').innerText = "₱" + total.toFixed(2);
   document.getElementById('sum-suggested').innerText = "₱" + ((total / yieldV) * (1 + markup/100)).toFixed(2);
 }
 
 async function handleSaveBatch(event) {
   event.preventDefault();
+  const nameSel = document.getElementById('b-name').value;
+  const finalName = nameSel === "Others" ? document.getElementById('b-name-manual').value : nameSel;
+
   const data = {
-    name: document.getElementById('b-name').value,
+    name: finalName,
     destination: document.getElementById('b-destination').value,
     yield_pcs: parseFloat(document.getElementById('b-yield').value),
     labor_cost: parseFloat(document.getElementById('b-labor').value) || 0,
     overhead_cost: parseFloat(document.getElementById('b-overhead').value) || 0,
     packaging_cost: parseFloat(document.getElementById('b-packaging').value) || 0,
-    cafe_percentage_cost: parseFloat(document.getElementById('sum-cafe').innerText.replace('₱','')), // NEW FIELD
+    cafe_percentage_cost: parseFloat(document.getElementById('sum-cafe').innerText.replace('₱','')),
     total_cost: parseFloat(document.getElementById('sum-total').innerText.replace('₱','')),
     suggested_price: parseFloat(document.getElementById('sum-suggested').innerText.replace('₱','')),
-    markup_percent: parseFloat(document.getElementById('b-markup').value) || 40
+    markup_percent: parseFloat(document.getElementById('b-markup').value) || 0
   };
   
   const { error } = await _sb.from('batches').insert([data]);
@@ -389,6 +410,7 @@ async function handleSaveBatch(event) {
 function openBatchModal() {
   document.querySelector('#modal-batch form').reset();
   document.getElementById('batch-ing-rows').innerHTML = "";
+  document.getElementById('b-name-manual').style.display = "none";
   addBatchIngRow(); openModal('modal-batch');
 }
 
