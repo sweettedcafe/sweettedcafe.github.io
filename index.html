@@ -611,7 +611,12 @@ function renderBatches() {
     return true;
   });
 
-  document.getElementById('batch-list-container').innerHTML = filtered.map(b => `
+  document.getElementById('batch-list-container').innerHTML = filtered.map(b => {
+    const totalCost = b.total_cost || 0;
+    const markupPercent = b.markup_percent || 0;
+    const calculatedMarkupValue = totalCost * (markupPercent / 100);
+
+    return `
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:flex-start;">
         <div>
@@ -635,8 +640,8 @@ function renderBatches() {
 
       <div style="display:grid; grid-template-columns:repeat(3,1fr); margin-top:12px; border-top: 1px dashed var(--border); padding-top:15px; font-size:13px;">
         <div>Yield: <b>${b.yield_pcs} pcs</b></div>
-        <div style="color:var(--rose);">Markup Total: <b>₱${(b.markup_value || 0).toFixed(2)}</b></div>
-        <div>Total Batch Cost: <b>₱${(b.total_cost || 0).toFixed(2)}</b></div>
+        <div style="color:var(--rose);">Markup Total (${markupPercent}%): <b>₱${calculatedMarkupValue.toFixed(2)}</b></div>
+        <div>Total Batch Cost: <b>₱${totalCost.toFixed(2)}</b></div>
       </div>
 
       <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
@@ -647,7 +652,8 @@ function renderBatches() {
           <button class="action-btn btn-del" onclick="deleteItem('batches',${b.id})">Delete</button>
         </div>
       </div>
-    </div>`).join('') || '<div class="card" style="text-align:center; color:var(--text-muted);">No batches found matching these filters.</div>';
+    </div>`;
+  }).join('') || '<div class="card" style="text-align:center; color:var(--text-muted);">No batches found matching these filters.</div>';
 }
 
 function renderSales(sData) {
