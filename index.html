@@ -322,6 +322,7 @@ function handleBatchSelect() {
 
 function addBatchIngRow(ingId = null, qty = null) {
   const row = document.createElement('div'); row.className = 'form-row ing-usage-row';
+  // Critical fix: Ensure options are generated from the globally loaded ingredients array
   let opts = ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}" ${i.id == ingId ? 'selected' : ''}>${i.name}</option>`).join('');
   row.innerHTML = `<select class="form-input use-sel" style="flex:2;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select><input type="number" step="any" class="form-input use-qty" style="flex:1;" placeholder="Qty" value="${qty || ''}" oninput="calculateBatch()">`;
   document.getElementById('batch-ing-rows').appendChild(row);
@@ -386,8 +387,9 @@ async function handleSaveBatch(event) {
     }
   });
 
-  const laborPercent = finalName === "Cookies" ? 50 : finalName === "Cookies Premium" ? 50 : finalName === "Brownies" ? 50 : finalName === "Crinkles" ? 50 : 0;
-  const overheadPercent = finalName === "Cookies" ? 20 : finalName === "Cookies Premium" ? 20 : finalName === "Brownies" ? 20 : finalName === "Crinkles" ? 20 : 0;
+  const presets = ["Cookies", "Cookies Premium", "Brownies", "Crinkles"];
+  const laborPercent = presets.includes(finalName) ? 50 : 0;
+  const overheadPercent = presets.includes(finalName) ? 20 : 0;
 
   const data = {
     name: finalName,
@@ -403,8 +405,8 @@ async function handleSaveBatch(event) {
     total_cost: parseFloat(document.getElementById('sum-total').innerText.replace('₱','')),
     suggested_price: parseFloat(document.getElementById('sum-suggested').innerText.replace('₱','')),
     markup_percent: parseFloat(document.getElementById('b-markup').value) || 0,
-    markup_percent: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')),
-    ingredients_used: ingredientsUsed // Saved as JSONB array
+    markup_value: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')),
+    ingredients_used: ingredientsUsed
   };
   
   let error;
@@ -449,7 +451,6 @@ function openBatchModal(id = null, duplicate = false) {
     document.getElementById('b-packaging').value = b.packaging_cost;
     document.getElementById('b-markup').value = b.markup_percent;
 
-    // Repopulate Multiple Ingredients from database JSONB
     if (b.ingredients_used && Array.isArray(b.ingredients_used) && b.ingredients_used.length > 0) {
         b.ingredients_used.forEach(ing => addBatchIngRow(ing.id, ing.qty));
     } else { addBatchIngRow(); }
@@ -459,7 +460,9 @@ function openBatchModal(id = null, duplicate = false) {
     document.getElementById('batch-id').value = "";
     document.getElementById('modal-batch-title').innerText = "New Batch";
     document.getElementById('b-date').value = new Date().toISOString().split('T')[0];
+    // This is the fix: Specifically call addBatchIngRow for new batches
     addBatchIngRow();
+    handleBatchSelect();
   }
   openModal('modal-batch');
 }
@@ -482,7 +485,7 @@ function renderBatches() {
   document.getElementById('batch-list-container').innerHTML = filtered.map(b => {
     const totalCost = b.total_cost || 0;
     const markupPercent = b.markup_percent || 0;
-    const calculatedMarkupValue = totalCost * (markupPercent / 100);
+    const calculatedMarkupValue = b.markup_value || (totalCost * (markupPercent / 100));
 
     return `
     <div class="card">
