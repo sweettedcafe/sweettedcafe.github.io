@@ -79,9 +79,6 @@
   .form-row { display: flex; gap: 15px; flex-wrap: wrap; }
   .form-group { flex: 1; min-width: 150px; }
   
-  /* Style for Multi-select dropdowns to look cleaner */
-  select[multiple] { height: 80px; padding: 5px; }
-
   .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; white-space: nowrap; }
   .btn-primary { background: var(--brown-mid); color: white; }
   .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
@@ -100,6 +97,7 @@
   .batch-summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
   .summary-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
 
+  /* PRINT STYLES */
   @media print {
     body { background: white; padding: 0; }
     .topbar, .nav-tabs, .filter-bar, .btn, .action-btn, footer, #chart-period, .dashboard-sub-grid { display: none !important; }
@@ -165,20 +163,17 @@
     <div class="page active" id="page-dashboard">
         <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
           <h1 style="font-family:'Playfair Display'; font-size:28px;">Good morning! 🐻</h1>
-          <div style="display:flex; gap:10px; flex-wrap: wrap; align-items: flex-end;">
-              <div class="filter-group">
-                  <label class="form-label">Filter Items (Hold Ctrl)</label>
-                  <select id="dash-filter-item" class="form-input" style="margin-bottom:0; width:180px;" onchange="refreshDashboard()" multiple>
-                    <option value="">All Items</option>
-                  </select>
-              </div>
-              <select id="dash-filter-dest" class="form-input" style="margin-bottom:0; width:150px; height: 38px;" onchange="refreshDashboard()">
+          <div style="display:flex; gap:10px; flex-wrap: wrap;">
+              <select id="dash-filter-item" class="form-input" style="margin-bottom:0; width:150px;" onchange="refreshDashboard()">
+                <option value=""></option>
+              </select>
+              <select id="dash-filter-dest" class="form-input" style="margin-bottom:0; width:150px;" onchange="refreshDashboard()">
                 <option value="">All Destinations</option>
                 <option value="Online Orders">Online Orders</option>
                 <option value="Bevi & Go">Bevi & Go</option>
                 <option value="Personal Consumption">Personal Consumption</option>
               </select>
-              <button class="btn btn-primary" style="height:38px;" onclick="openBatchModal()">+ New Batch</button>
+              <button class="btn btn-primary" onclick="openBatchModal()">+ New Batch</button>
           </div>
         </div>
 
@@ -247,14 +242,14 @@
         </div>
         <div class="filter-bar">
           <div class="filter-group">
-              <label class="form-label">Batch Names (Hold Ctrl)</label>
-              <select id="filter-name" class="form-input" style="margin-bottom:0; width:180px;" onchange="renderBatches()" multiple>
+              <label class="form-label">Batch Name</label>
+              <select id="filter-name" class="form-input" style="margin-bottom:0; width:160px;" onchange="renderBatches()">
                 <option value="">All Items</option>
               </select>
           </div>
           <div class="filter-group">
               <label class="form-label">Destination</label>
-              <select id="filter-dest" class="form-input" style="margin-bottom:0; width:160px; height: 38px;" onchange="renderBatches()">
+              <select id="filter-dest" class="form-input" style="margin-bottom:0; width:160px;" onchange="renderBatches()">
                 <option value="">All Destinations</option>
                 <option value="Online Orders">Online Orders</option>
                 <option value="Bevi & Go">Bevi & Go</option>
@@ -262,10 +257,10 @@
               </select>
           </div>
           <div class="filter-group">
-              <label class="form-label">From</label><input type="date" id="filter-from" class="form-input" style="margin-bottom:0; width:140px; height: 38px;" onchange="renderBatches()">
+              <label class="form-label">From</label><input type="date" id="filter-from" class="form-input" style="margin-bottom:0; width:140px;" onchange="renderBatches()">
           </div>
           <div class="filter-group">
-              <label class="form-label">To</label><input type="date" id="filter-to" class="form-input" style="margin-bottom:0; width:140px; height: 38px;" onchange="renderBatches()">
+              <label class="form-label">To</label><input type="date" id="filter-to" class="form-input" style="margin-bottom:0; width:140px;" onchange="renderBatches()">
           </div>
           <button class="btn btn-ghost" style="height:38px;" onclick="clearFilters()">Clear Filters</button>
         </div>
@@ -282,9 +277,16 @@
               <p style="font-size:12px; color:#555;">Report Date: <span id="print-date"></span></p>
             </div>
           </div>
+
           <div class="print-grid">
-            <div class="card" style="padding:15px;"><h4 style="margin-bottom:10px;">📈 Performance Insights</h4><div id="print-insights-content"></div></div>
-            <div class="card" style="padding:15px;"><h4 style="margin-bottom:10px;">💰 Financial Breakdown</h4><div id="print-financial-content"></div></div>
+            <div class="card" style="padding:15px;">
+              <h4 style="margin-bottom:10px;">📈 Performance Insights</h4>
+              <div id="print-insights-content"></div>
+            </div>
+            <div class="card" style="padding:15px;">
+              <h4 style="margin-bottom:10px;">💰 Financial Breakdown</h4>
+              <div id="print-financial-content"></div>
+            </div>
           </div>
         </div>
 
@@ -295,14 +297,14 @@
 
         <div class="filter-bar">
           <div class="filter-group">
-              <label class="form-label">Items (Hold Ctrl)</label>
-              <select id="sales-filter-item" class="form-input" style="margin-bottom:0; width:180px;" onchange="applySalesFilters()" multiple>
+              <label class="form-label">Item</label>
+              <select id="sales-filter-item" class="form-input" style="margin-bottom:0; width:160px;" onchange="applySalesFilters()">
                 <option value="">All Items</option>
               </select>
           </div>
           <div class="filter-group">
               <label class="form-label">Destination</label>
-              <select id="sales-filter-dest" class="form-input" style="margin-bottom:0; width:160px; height: 38px;" onchange="applySalesFilters()">
+              <select id="sales-filter-dest" class="form-input" style="margin-bottom:0; width:160px;" onchange="applySalesFilters()">
                 <option value="">All Destinations</option>
                 <option value="Online Orders">Online Orders</option>
                 <option value="Bevi & Go">Bevi & Go</option>
@@ -311,11 +313,11 @@
           </div>
           <div class="filter-group">
               <label class="form-label">From</label>
-              <input type="date" id="sales-filter-from" class="form-input" style="margin-bottom:0; width:140px; height: 38px;" onchange="applySalesFilters()">
+              <input type="date" id="sales-filter-from" class="form-input" style="margin-bottom:0; width:140px;" onchange="applySalesFilters()">
           </div>
           <div class="filter-group">
               <label class="form-label">To</label>
-              <input type="date" id="sales-filter-to" class="form-input" style="margin-bottom:0; width:140px; height: 38px;" onchange="applySalesFilters()">
+              <input type="date" id="sales-filter-to" class="form-input" style="margin-bottom:0; width:140px;" onchange="applySalesFilters()">
           </div>
           <button class="btn btn-ghost" style="height:38px;" onclick="clearSalesFilters()">Clear Filters</button>
         </div>
@@ -333,6 +335,7 @@
         </div>
     </div>
     </div>
+
     <footer>© 2026 Sweet Ted Cafe. All rights reserved.🐻 </footer>
 </div>
 
@@ -354,15 +357,15 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">COST BULK</label><input type="number" step="any" id="i-cost-bulk" class="form-input" required></div>
-          <div class="form-group"><label class="form-label">BULK QTY</label><input type="number" step="any" id="i-qty-bulk" class="form-input" required></div>
+          <div class="form-group"><label class="form-label">COST PER PURCHASE</label><input type="number" step="any" id="i-cost-bulk" class="form-input" required></div>
+          <div class="form-group"><label class="form-label">PURCHASE QTY</label><input type="number" step="any" id="i-qty-bulk" class="form-input" required></div>
           <div class="form-group" style="max-width: 100px;"><label class="form-label">UNIT</label>
             <select id="i-unit" class="form-input"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="L">L</option><option value="pcs">pcs</option></select>
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">STOCK QTY</label><input type="number" step="any" id="i-stock" class="form-input" required></div>
-          <div class="form-group"><label class="form-label">ALERT LEVEL</label><input type="number" step="any" id="i-alert" class="form-input"></div>
+          <div class="form-group"><label class="form-label">CURRENT STOCK QTY</label><input type="number" step="any" id="i-stock" class="form-input" required></div>
+          <div class="form-group"><label class="form-label">LOW STOCK ALERT AT</label><input type="number" step="any" id="i-alert" class="form-input"></div>
         </div>
         <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;">
           <button type="button" class="btn btn-ghost" onclick="closeModal('modal-ing')">Cancel</button>
@@ -371,7 +374,7 @@
       </form>
     </div>
 </div>
-
+  
 <div id="modal-batch" class="modal-bg">
     <div class="modal">
       <h2 id="modal-batch-title" style="font-family:'Playfair Display'; margin-bottom:20px;">New Batch</h2>
@@ -394,21 +397,39 @@
             <select id="b-destination" class="form-input"><option value="Online Orders">Online Orders</option><option value="Bevi & Go">Bevi & Go</option><option value="Personal Consumption">Personal Consumption</option></select>
           </div>
         </div>
-        <div class="form-row"><div class="form-group"><label class="form-label">DATE</label><input type="date" id="b-date" class="form-input" required></div><div class="form-group"><label class="form-label">YIELD (PCS)</label><input type="number" id="b-yield" class="form-input" oninput="calculateBatch()" required></div></div>
-        <div class="ing-header" onclick="toggleIngredients()"><label class="form-label" style="margin-bottom:0; cursor:pointer;">INGREDIENTS USED</label><span id="ing-toggle-icon">▼</span></div>
-        <div id="ing-section-content" class="ing-content"><div id="batch-ing-rows"></div><button type="button" class="btn btn-ghost" style="padding:6px 12px; font-size:12px; margin-bottom:15px;" onclick="addBatchIngRow()">+ Add Ingredient</button></div>
-        <div class="form-row" id="manual-pct-row" style="display:none; margin-bottom: 10px;"><div class="form-group"><label class="form-label">LABOR %</label><input type="number" id="b-labor-pct" class="form-input" oninput="calculateBatch()"></div><div class="form-group"><label class="form-label">OVERHEAD %</label><input type="number" id="b-overhead-pct" class="form-input" oninput="calculateBatch()"></div></div>
-        <div class="form-row"><div class="form-group"><label class="form-label">LABOR (₱)</label><input type="number" step="0.01" id="b-labor" class="form-input" oninput="calculateBatch()" readonly></div><div class="form-group"><label class="form-label">OVERHEAD (₱)</label><input type="number" step="0.01" id="b-overhead" class="form-input" oninput="calculateBatch()" readonly></div><div class="form-group"><label class="form-label">PACKAGING</label><input type="number" step="0.01" id="b-packaging" class="form-input" oninput="calculateBatch()" readonly></div></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">DATE</label><input type="date" id="b-date" class="form-input" required></div>
+          <div class="form-group"><label class="form-label">YIELD (PCS)</label><input type="number" id="b-yield" class="form-input" oninput="calculateBatch()" required></div>
+        </div>
+        <div class="ing-header" onclick="toggleIngredients()">
+          <label class="form-label" style="margin-bottom:0; cursor:pointer;">INGREDIENTS USED</label><span id="ing-toggle-icon">▼</span>
+        </div>
+        <div id="ing-section-content" class="ing-content">
+          <div id="batch-ing-rows"></div>
+          <button type="button" class="btn btn-ghost" style="padding:6px 12px; font-size:12px; margin-bottom:15px;" onclick="addBatchIngRow()">+ Add Ingredient</button>
+        </div>
+        
+        <div class="form-row" id="manual-pct-row" style="display:none; margin-bottom: 10px;">
+          <div class="form-group"><label class="form-label">LABOR % (OF ING. COST)</label><input type="number" id="b-labor-pct" class="form-input" placeholder="e.g. 50" oninput="calculateBatch()"></div>
+          <div class="form-group"><label class="form-label">OVERHEAD % (OF ING. COST)</label><input type="number" id="b-overhead-pct" class="form-input" placeholder="e.g. 20" oninput="calculateBatch()"></div>
+        </div>
+  
+        <div class="form-row" style="margin-top:5px;">
+          <div class="form-group"><label class="form-label">LABOR (₱)</label><input type="number" step="0.01" id="b-labor" class="form-input" oninput="calculateBatch()" readonly></div>
+          <div class="form-group"><label class="form-label">OVERHEAD (₱)</label><input type="number" step="0.01" id="b-overhead" class="form-input" oninput="calculateBatch()" readonly></div>
+          <div class="form-group"><label class="form-label">PACKAGING</label><input type="number" step="0.01" id="b-packaging" class="form-input" oninput="calculateBatch()" readonly></div>
+        </div>
         <div class="form-row"><div class="form-group"><label class="form-label">MARKUP %</label><input type="number" id="b-markup" class="form-input" value="40" oninput="calculateBatch()" readonly></div></div>
+        
         <div class="summary-box">
           <div class="summary-item"><span>Ingredient cost</span><span id="sum-ing">₱0.00</span></div>
           <div class="summary-item"><span>Labor</span><span id="sum-labor">₱0.00</span></div>
           <div class="summary-item"><span>Overhead</span><span id="sum-overhead">₱0.00</span></div>
           <div class="summary-item"><span>Packaging</span><span id="sum-packaging">₱0.00</span></div>
-          <div class="summary-item"><span>Cafe (10%)</span><span id="sum-cafe">₱0.00</span></div>
-          <div class="summary-item" style="border-top:1px dashed #ccc; padding-top:5px; color:var(--rose); font-weight:600;"><span>Markup (₱)</span><span id="sum-markup-val">₱0.00</span></div>
+          <div class="summary-item"><span>Cafe Percentage (10%)</span><span id="sum-cafe">₱0.00</span></div>
+          <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 5px; color: var(--rose); font-weight: 600;"><span>Markup Total (₱)</span><span id="sum-markup-val">₱0.00</span></div>
           <div class="summary-total"><span>Total Batch Cost</span><span id="sum-total">₱0.00</span></div>
-          <div class="summary-item" style="color:var(--sage); font-weight:700;"><span>Suggested Price/pc</span><span id="sum-suggested">₱0.00</span></div>
+          <div class="summary-item" style="color:var(--sage); font-weight:700;"><span>Suggested price / pc</span><span id="sum-suggested">₱0.00</span></div>
         </div>
         <div style="display:flex; gap:10px; margin-top:20px;"><button type="button" class="btn btn-ghost" onclick="closeModal('modal-batch')">Cancel</button><button type="submit" class="btn btn-save">Save Batch</button></div>
       </form>
@@ -445,50 +466,40 @@ async function loadData() {
   const { data: i } = await _sb.from('ingredients').select('*').order('name');
   const { data: b } = await _sb.from('batches').select('*').order('created_at', {ascending: false});
   const { data: s } = await _sb.from('sales').select('*, batches(name, date, destination, yield_pcs, total_cost, labor_cost, overhead_cost, packaging_cost, cafe_percentage_cost)');
-  ingredients = i || []; batches = b || []; allSalesData = s || [];
-  updateDashboardFilterDropdown();
-  updateBatchFilterDropdown();
-  updateSalesItemDropdown();
+  
+  ingredients = i || []; 
+  batches = b || []; 
+  allSalesData = s || [];
+
+  // These three lines ensure the UI updates with the database data
+  updateDashboardFilterDropdown(); 
+  updateSalesItemDropdown(); 
   refreshDashboard(); 
+
   renderInventory(); 
   renderBatches(); 
   renderSales(allSalesData);
 }
 
-// Helpers for multi-select value retrieval
-function getMultiSelectValues(id) {
-    const el = document.getElementById(id);
-    return Array.from(el.selectedOptions).map(opt => opt.value).filter(v => v !== "");
-}
-
 function updateDashboardFilterDropdown() {
     const dashDropdown = document.getElementById('dash-filter-item');
     if (!dashDropdown) return;
-    const uniqueItems = [...new Set(batches.map(b => b.name))].sort();
-    dashDropdown.innerHTML = `<option value="">All Items</option>` + uniqueItems.map(name => `<option value="${name}">${name}</option>`).join('');
-}
 
-function updateBatchFilterDropdown() {
-    const filterDropdown = document.getElementById('filter-name');
-    if (!filterDropdown) return;
+    // Pull unique names from the batches array which is synced with Supabase
     const uniqueItems = [...new Set(batches.map(b => b.name))].sort();
-    filterDropdown.innerHTML = `<option value="">All Items</option>` + uniqueItems.map(name => `<option value="${name}">${name}</option>`).join('');
-}
-
-function updateSalesItemDropdown() {
-  const dropdown = document.getElementById('sales-filter-item');
-  if (!dropdown) return;
-  const uniqueItems = [...new Set(allSalesData.map(s => s.item_name))].sort();
-  dropdown.innerHTML = `<option value="">All Items</option>` + uniqueItems.map(n => `<option value="${n}">${n}</option>`).join('');
+    
+    // Clear and rebuild the dropdown options
+    let optionsHtml = `<option value="">All Items</option>`;
+    optionsHtml += uniqueItems.map(name => `<option value="${name}">${name}</option>`).join('');
+    
+    dashDropdown.innerHTML = optionsHtml;
 }
 
 function refreshDashboard() {
-  const items = getMultiSelectValues('dash-filter-item');
+  const itemF = document.getElementById('dash-filter-item').value;
   const destF = document.getElementById('dash-filter-dest').value;
-  
-  const filteredSales = allSalesData.filter(s => (items.length === 0 || items.includes(s.item_name)) && (!destF || (s.batches?.destination === destF)));
-  const filteredBatches = batches.filter(b => (items.length === 0 || items.includes(b.name)) && (!destF || b.destination === destF));
-  
+  const filteredSales = allSalesData.filter(s => (!itemF || s.item_name === itemF) && (!destF || (s.batches?.destination === destF)));
+  const filteredBatches = batches.filter(b => (!itemF || b.name === itemF) && (!destF || b.destination === destF));
   renderStats(filteredSales, filteredBatches);
   renderSalesChart(filteredSales);
   renderInsights(filteredSales);
@@ -498,21 +509,23 @@ function refreshDashboard() {
 function renderStats(sData, bData) {
   document.getElementById('d-ing').innerText = ingredients.length;
   document.getElementById('d-batch').innerText = bData.length;
+  
   const rev = sData.reduce((a, c) => a + c.total_revenue, 0);
   const cost = bData.reduce((a, c) => a + (c.total_cost || 0), 0);
   const profit = rev - cost;
-  const revEl = document.getElementById('d-rev'), profitEl = document.getElementById('d-profit');
-  revEl.innerText = "₱" + rev.toFixed(2); revEl.className = "stat-val " + (rev > 0 ? "val-pos" : "val-neg");
-  profitEl.innerText = "₱" + profit.toFixed(2); profitEl.className = "stat-val " + (profit > 0 ? "val-pos" : "val-neg");
+
+  const revEl = document.getElementById('d-rev');
+  const profitEl = document.getElementById('d-profit');
+
+  revEl.innerText = "₱" + rev.toFixed(2);
+  revEl.className = "stat-val " + (rev > 0 ? "val-pos" : "val-neg");
+
+  profitEl.innerText = "₱" + profit.toFixed(2);
+  profitEl.className = "stat-val " + (profit > 0 ? "val-pos" : "val-neg");
 }
 
 function renderInsights(sData) {
-    if (sData.length === 0) {
-        document.getElementById('best-seller').innerText = "No data";
-        document.getElementById('least-seller').innerText = "No data";
-        document.getElementById('dest-split').innerHTML = "";
-        return;
-    }
+    if (sData.length === 0) return;
     const counts = {}, dests = {};
     sData.forEach(s => {
         counts[s.item_name] = (counts[s.item_name] || 0) + s.qty_sold;
@@ -545,9 +558,9 @@ function renderSalesChart(sData) {
 function renderDashboardLists(bData) {
     document.getElementById('recent-batch-list').innerHTML = bData.slice(0, 5).map(b => `
       <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
-        <div><div style="font-weight:600;">${b.name}</div><div style="font-size:12px; color:var(--text-muted);">${b.date}</div></div>
+        <div><div style="font-weight:600;">${b.name}</div><div style="font-size:12px; color:var(--text-muted);">${b.date} | Yield: ${b.yield_pcs} pcs</div></div>
         <div style="font-weight:700;">₱${(b.total_cost || 0).toFixed(2)}</div>
-      </div>`).join('') || '<p style="font-size:12px; color:var(--text-muted);">No batches found.</p>';
+      </div>`).join('');
     document.getElementById('low-stock-list').innerHTML = ingredients.filter(i => i.stock <= (i.low_stock_threshold || 5)).map(i => `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
             <div style="font-weight:600;">${i.name}</div><div style="color:var(--rose); font-weight:700;">${i.stock} ${i.unit}</div>
@@ -616,9 +629,8 @@ function handleBatchSelect() {
 function addBatchIngRow(ingId = null, qty = null) {
   const row = document.createElement('div'); row.className = 'form-row ing-usage-row'; row.style.alignItems = 'center'; row.style.gap = '8px'; row.style.marginBottom = '10px';
   let opts = ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}" ${i.id == ingId ? 'selected' : ''}>${i.name}</option>`).join('');
-  row.innerHTML = `<select class="form-input use-sel" style="flex:2; margin-bottom:0;"><option value="">Select</option>${opts}</select><input type="number" step="any" class="form-input use-qty" style="flex:1; margin-bottom:0;" value="${qty || ''}" oninput="calculateBatch()"><button type="button" style="background:none; border:none; color:var(--rose);" onclick="this.parentElement.remove(); calculateBatch();">×</button>`;
+  row.innerHTML = `<select class="form-input use-sel" style="flex:2; margin-bottom:0;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select><input type="number" step="any" class="form-input use-qty" style="flex:1; margin-bottom:0;" value="${qty || ''}" oninput="calculateBatch()"><button type="button" style="background:none; border:none; cursor:pointer; font-size:18px; color:var(--rose);" onclick="this.parentElement.remove(); calculateBatch();">×</button>`;
   document.getElementById('batch-ing-rows').appendChild(row);
-  row.querySelector('.use-sel').addEventListener('change', calculateBatch);
 }
 
 function calculateBatch() {
@@ -638,30 +650,30 @@ function calculateBatch() {
     overhead = oPct > 0 ? ingTotal * (oPct / 100) : (parseFloat(document.getElementById('b-overhead').value) || 0);
     packaging = parseFloat(document.getElementById('b-packaging').value) || 0;
   }
-  document.getElementById('b-labor').value = labor.toFixed(2); document.getElementById('b-overhead').value = overhead.toFixed(2);
+  document.getElementById('b-labor').value = labor.toFixed(2);
+  document.getElementById('b-overhead').value = overhead.toFixed(2);
   document.getElementById('b-packaging').value = packaging.toFixed(2);
-  const totalNoCafe = ingTotal + labor + overhead + packaging;
-  const cafe = totalNoCafe * 0.10; const totalCost = totalNoCafe + cafe;
-  const mkp = (parseFloat(document.getElementById('b-markup').value) || 0) / 100;
-  const mkVal = totalCost * mkp;
+  const sub = ingTotal + labor + overhead + packaging;
+  const cafe = sub * 0.10; const total = sub + cafe;
+  const mkpV = total * ((parseFloat(document.getElementById('b-markup').value) || 0) / 100);
   document.getElementById('sum-ing').innerText = "₱" + ingTotal.toFixed(2);
   document.getElementById('sum-labor').innerText = "₱" + labor.toFixed(2);
   document.getElementById('sum-overhead').innerText = "₱" + overhead.toFixed(2);
   document.getElementById('sum-packaging').innerText = "₱" + packaging.toFixed(2);
   document.getElementById('sum-cafe').innerText = "₱" + cafe.toFixed(2);
-  document.getElementById('sum-markup-val').innerText = "₱" + mkVal.toFixed(2);
-  document.getElementById('sum-total').innerText = "₱" + totalCost.toFixed(2);
-  document.getElementById('sum-suggested').innerText = "₱" + ((totalCost + mkVal) / (parseFloat(document.getElementById('b-yield').value) || 1)).toFixed(2);
+  document.getElementById('sum-markup-val').innerText = "₱" + mkpV.toFixed(2);
+  document.getElementById('sum-total').innerText = "₱" + total.toFixed(2);
+  document.getElementById('sum-suggested').innerText = "₱" + ((total + mkpV) / (parseFloat(document.getElementById('b-yield').value) || 1)).toFixed(2);
 }
 
 async function handleSaveBatch(event) {
   event.preventDefault();
   const id = document.getElementById('batch-id').value, nameSel = document.getElementById('b-name').value;
   const finalName = nameSel === "Others" ? document.getElementById('b-name-manual').value : nameSel;
-  const ingsUsed = [];
+  const ingredientsUsed = [];
   document.querySelectorAll('.ing-usage-row').forEach(row => {
     const sel = row.querySelector('.use-sel'), q = parseFloat(row.querySelector('.use-qty').value);
-    if(sel.value && q > 0) ingsUsed.push({ id: sel.value, name: ingredients.find(i => i.id == sel.value).name, qty: q });
+    if(sel.value && q > 0) ingredientsUsed.push({ id: sel.value, name: ingredients.find(i => i.id == sel.value).name, qty: q });
   });
   const data = {
     name: finalName, destination: document.getElementById('b-destination').value, date: document.getElementById('b-date').value,
@@ -670,7 +682,7 @@ async function handleSaveBatch(event) {
     cafe_percentage_cost: parseFloat(document.getElementById('sum-cafe').innerText.replace('₱','')),
     total_cost: parseFloat(document.getElementById('sum-total').innerText.replace('₱','')),
     suggested_price: parseFloat(document.getElementById('sum-suggested').innerText.replace('₱','')),
-    markup_percent: parseFloat(document.getElementById('b-markup').value), markup_value: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')), ingredients_used: ingsUsed
+    markup_percent: parseFloat(document.getElementById('b-markup').value), markup_value: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')), ingredients_used: ingredientsUsed
   };
   let { error } = id ? await _sb.from('batches').update(data).eq('id', id) : await _sb.from('batches').insert([data]);
   if (error) alert(error.message); else { closeModal('modal-batch'); loadData(); }
@@ -701,19 +713,12 @@ async function openSalesModal(batchId) {
 }
 
 function renderBatches() {
-  const items = getMultiSelectValues('filter-name');
-  const df = document.getElementById('filter-dest').value;
-  const fromD = document.getElementById('filter-from').value, toD = document.getElementById('filter-to').value;
-  const filtered = batches.filter(b => {
-    const matchName = items.length === 0 || items.includes(b.name);
-    const matchDest = !df || b.destination === df;
-    const matchDate = (!fromD || b.date >= fromD) && (!toD || b.date <= toD);
-    return matchName && matchDest && matchDate;
-  });
+  const nf = document.getElementById('filter-name').value, df = document.getElementById('filter-dest').value;
+  const filtered = batches.filter(b => (!nf || b.name === nf) && (!df || b.destination === df));
   document.getElementById('batch-list-container').innerHTML = filtered.map(b => `<div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
-        <div><h3>${b.name}</h3><div><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${b.destination || 'Online'}</span> <span style="font-size:11px; color:var(--text-muted); font-weight:600;">📅 ${b.date}</span></div></div>
-        <button class="btn btn-sales-trigger" onclick="openSalesModal(${b.id})">+ Record Sales</button>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap: 10px;">
+        <div><h3>${b.name}</h3><div><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700; margin-right:5px;">${b.destination || 'Online'}</span><span style="font-size:11px; color:var(--text-muted); font-weight:600;">📅 ${b.date}</span></div></div>
+        <div><button class="btn btn-sales-trigger" onclick="openSalesModal(${b.id})">+ Record Sales</button></div>
       </div>
       <div class="batch-summary-grid">
         <div><span class="summary-label">Labor</span>₱${(b.labor_cost || 0).toFixed(2)}</div>
@@ -721,55 +726,80 @@ function renderBatches() {
         <div><span class="summary-label">Packaging</span>₱${(b.packaging_cost || 0).toFixed(2)}</div>
         <div><span class="summary-label">Cafe (10%)</span>₱${(b.cafe_percentage_cost || 0).toFixed(2)}</div>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; flex-wrap:wrap; gap:10px;">
-        <div style="color:var(--sage); font-weight:700;">Price: ₱${(b.suggested_price || 0).toFixed(2)}</div>
-        <div><button class="action-btn" onclick="openBatchModal(${b.id})">Edit</button><button class="action-btn" onclick="openBatchModal(${b.id}, true)">Copy</button><button class="action-btn btn-del" onclick="deleteItem('batches',${b.id})">Del</button></div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top:12px; border-top: 1px dashed var(--border); padding-top:15px; font-size:13px;">
+        <div>Yield: <b>${b.yield_pcs} pcs</b></div>
+        <div style="color:var(--rose);">Markup Total: <b>₱${(b.markup_value || 0).toFixed(2)}</b></div>
+        <div>Total Batch Cost: <b>₱${(b.total_cost || 0).toFixed(2)}</b></div>
       </div>
-    </div>`).join('') || '<p style="text-align:center; color:var(--text-muted);">No batches found.</p>';
+      <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
+        <div style="color:var(--sage); font-weight:700;">Price/Pc: ₱${(b.suggested_price || 0).toFixed(2)}</div>
+        <div><button class="action-btn" onclick="openBatchModal(${b.id})">Edit</button><button class="action-btn" onclick="openBatchModal(${b.id}, true)">Duplicate</button><button class="action-btn btn-del" onclick="deleteItem('batches',${b.id})">Delete</button></div>
+      </div>
+    </div>`).join('');
 }
 
 function renderInventory() {
   document.getElementById('ing-table-body').innerHTML = ingredients.map(i => `<tr><td>${i.name}</td><td>${i.category}</td><td>${i.unit}</td><td>₱${i.cpu.toFixed(2)}</td><td>${i.stock}</td><td>₱${(i.cpu*i.stock).toFixed(2)}</td><td><button class="action-btn" onclick="openIngModal(${i.id})">Edit</button> <button class="action-btn btn-del" onclick="deleteItem('ingredients',${i.id})">Del</button></td></tr>`).join('');
 }
 
+function updateSalesItemDropdown() {
+  const dropdown = document.getElementById('sales-filter-item');
+  if (!dropdown) return;
+  const uniqueItems = [...new Set(allSalesData.map(s => s.item_name))].sort();
+  dropdown.innerHTML = `<option value="">All Items</option>` + uniqueItems.map(n => `<option value="${n}">${n}</option>`).join('');
+}
+
 function renderSales(sData) {
   const body = document.getElementById('sales-table-body');
   if (body) {
-    body.innerHTML = sData.map(s => `<tr><td><b>${s.item_name}</b></td><td>${s.batches?.date || ''}</td><td><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${s.batches?.destination || ''}</span></td><td>${s.qty_sold}</td><td>${(s.batches?.yield_pcs || 0) - s.qty_sold}</td><td>₱${s.unit_price.toFixed(2)}</td><td>₱${s.total_revenue.toFixed(2)}</td><td class="btn"><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td></tr>`).join('');
+    body.innerHTML = sData.map(s => `<tr><td><b>${s.item_name}</b></td><td>${s.batches?.date || 'N/A'}</td><td><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${s.batches?.destination || 'N/A'}</span></td><td>${s.qty_sold}</td><td style="font-weight:bold; color:var(--sage)">${(s.batches?.yield_pcs || 0) - s.qty_sold}</td><td>₱${s.unit_price.toFixed(2)}</td><td>₱${s.total_revenue.toFixed(2)}</td><td class="btn"><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td></tr>`).join('');
+    
+    // Prepare Print Data & Insights
     const totalRev = sData.reduce((a,c) => a + c.total_revenue, 0);
-    const counts = {}; let tL = 0, tO = 0, tP = 0, tC = 0, tTC = 0;
+    const counts = {};
+    let tLabor = 0, tOver = 0, tPack = 0, tCafe = 0, tTotalCost = 0;
+
     sData.forEach(s => {
         counts[s.item_name] = (counts[s.item_name] || 0) + s.qty_sold;
-        if(s.batches) { tL += (s.batches.labor_cost || 0); tO += (s.batches.overhead_cost || 0); tP += (s.batches.packaging_cost || 0); tC += (s.batches.cafe_percentage_cost || 0); tTC += (s.batches.total_cost || 0); }
+        if(s.batches) {
+            tLabor += (s.batches.labor_cost || 0);
+            tOver += (s.batches.overhead_cost || 0);
+            tPack += (s.batches.packaging_cost || 0);
+            tCafe += (s.batches.cafe_percentage_cost || 0);
+            tTotalCost += (s.batches.total_cost || 0);
+        }
     });
+
     const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
-    const best = sorted.length ? sorted[0] : ["-", 0], least = sorted.length ? sorted[sorted.length-1] : ["-", 0];
-    document.getElementById('print-insights-content').innerHTML = `<div class="print-stat"><b>Best:</b> ${best[0]}</div><div class="print-stat" style="margin-top:10px;"><b>Least:</b> ${least[0]}</div>`;
-    document.getElementById('print-financial-content').innerHTML = `<div style="font-size:12px;"><div style="display:flex; justify-content:space-between;"><span>Total Cost:</span><b>₱${tTC.toFixed(2)}</b></div></div>`;
-    document.getElementById('print-date').innerText = new Date().toLocaleDateString();
-    document.getElementById('print-total-sales').innerText = "Total: ₱" + totalRev.toLocaleString();
+    const best = sorted.length ? sorted[0] : ["None", 0];
+    const least = sorted.length ? sorted[sorted.length-1] : ["None", 0];
+
+    // Update Print Insights Content
+    document.getElementById('print-insights-content').innerHTML = `
+      <div class="print-stat"><b>Top Selling Item:</b> ${best[0]} (${best[1]} pcs)</div>
+      <div class="print-stat" style="margin-top:10px;"><b>Least Selling Item:</b> ${least[0]} (${least[1]} pcs)</div>
+    `;
+
+    // Update Print Financial Content
+    document.getElementById('print-financial-content').innerHTML = `
+      <div style="font-size:12px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Labor:</span><span>₱${tLabor.toFixed(2)}</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Overhead:</span><span>₱${tOver.toFixed(2)}</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Packaging:</span><span>₱${tPack.toFixed(2)}</span></div>
+        <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; padding-top:5px; margin-bottom:5px;"><b>Cafe Percentage (10%):</b><b>₱${tCafe.toFixed(2)}</b></div>
+        <div style="display:flex; justify-content:space-between; border-top:2px solid #ddd; padding-top:5px;"><b>Estimated Total Cost:</b><b>₱${tTotalCost.toFixed(2)}</b></div>
+      </div>
+    `;
+
+    document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-PH', { dateStyle: 'long', timeStyle: 'short' });
+    document.getElementById('print-total-sales').innerText = "Grand Total Revenue: ₱" + totalRev.toLocaleString(undefined, {minimumFractionDigits: 2});
   }
 }
 
 async function deleteItem(tbl, id) { if(confirm("Delete?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
-function clearFilters() { document.getElementById('filter-name').selectedIndex = -1; document.getElementById('filter-dest').value = ""; renderBatches(); }
-
-function applySalesFilters() {
-  const items = getMultiSelectValues('sales-filter-item');
-  const destF = document.getElementById('sales-filter-dest').value;
-  const fromF = document.getElementById('sales-filter-from').value;
-  const toF = document.getElementById('sales-filter-to').value;
-  const filtered = allSalesData.filter(s => {
-    const matchItem = items.length === 0 || items.includes(s.item_name);
-    const matchDest = !destF || s.batches?.destination === destF;
-    const sDate = s.batches?.date || "";
-    const matchDate = (!fromF || sDate >= fromF) && (!toF || sDate <= toF);
-    return matchItem && matchDest && matchDate;
-  });
-  renderSales(filtered);
-}
-
-function clearSalesFilters() { document.getElementById('sales-filter-item').selectedIndex = -1; applySalesFilters(); }
+function clearFilters() { renderBatches(); }
+function applySalesFilters() { renderSales(allSalesData); }
+function clearSalesFilters() { renderSales(allSalesData); }
 </script>
 </body>
 </html>
