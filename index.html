@@ -121,10 +121,6 @@
         <label class="form-label">Batch Name</label>
         <select id="filter-name" class="form-input" style="margin-bottom:0; width:160px;" onchange="renderBatches()">
           <option value="">All Items</option>
-          <option value="Cookies">Cookies</option>
-          <option value="Cookies Premium">Cookies Premium</option>
-          <option value="Brownies">Brownies</option>
-          <option value="Crinkles">Crinkles</option>
         </select>
       </div>
       <div class="filter-group">
@@ -203,13 +199,7 @@
         <div class="form-group" style="flex: 2;">
           <label class="form-label">BATCH NAME</label>
           <select id="b-name" class="form-input" onchange="handleBatchSelect()">
-            <option value="">Select Item</option>
-            <option value="Cookies">Cookies</option>
-            <option value="Cookies Premium">Cookies Premium</option>
-            <option value="Brownies">Brownies</option>
-            <option value="Crinkles">Crinkles</option>
-            <option value="Others">Others (Manual Input)</option>
-          </select>
+            </select>
           <input type="text" id="b-name-manual" class="form-input" placeholder="Enter custom name" style="display:none; margin-top: -10px;">
         </div>
         <div class="form-group" style="flex: 1;"><label class="form-label">DESTINATION</label>
@@ -424,7 +414,7 @@ function openBatchModal(id = null, duplicate = false) {
   
   const nameDropdown = document.getElementById('b-name');
   const presets = ["Cookies", "Cookies Premium", "Brownies", "Crinkles", "Others", ""];
-  const customNames = [...new Set(batches.map(b => b.name))].filter(n => !presets.includes(n));
+  const uniqueNames = [...new Set(batches.map(b => b.name))].filter(n => !presets.includes(n));
   
   nameDropdown.innerHTML = `
     <option value="">Select Item</option>
@@ -432,7 +422,7 @@ function openBatchModal(id = null, duplicate = false) {
     <option value="Cookies Premium">Cookies Premium</option>
     <option value="Brownies">Brownies</option>
     <option value="Crinkles">Crinkles</option>
-    ${customNames.map(n => `<option value="${n}">${n}</option>`).join('')}
+    ${uniqueNames.sort().map(n => `<option value="${n}">${n}</option>`).join('')}
     <option value="Others">Others (Manual Input)</option>
   `;
 
@@ -467,6 +457,15 @@ async function openSalesModal(batchId) {
 function renderBatches() {
   const from = document.getElementById('filter-from').value, to = document.getElementById('filter-to').value;
   const nf = document.getElementById('filter-name').value, df = document.getElementById('filter-dest').value;
+  
+  // Sync unique names to filter dropdown
+  const filterDropdown = document.getElementById('filter-name');
+  const presets = ["Cookies", "Cookies Premium", "Brownies", "Crinkles", ""];
+  const uniqueNames = [...new Set(batches.map(b => b.name))].filter(n => !presets.includes(n));
+  const currentFilter = filterDropdown.value;
+  filterDropdown.innerHTML = `<option value="">All Items</option><option value="Cookies">Cookies</option><option value="Cookies Premium">Cookies Premium</option><option value="Brownies">Brownies</option><option value="Crinkles">Crinkles</option>${uniqueNames.sort().map(n => `<option value="${n}">${n}</option>`).join('')}`;
+  filterDropdown.value = currentFilter;
+
   const filtered = batches.filter(b => (!from || b.date >= from) && (!to || b.date <= to) && (!nf || b.name === nf) && (!df || b.destination === df));
   document.getElementById('batch-list-container').innerHTML = filtered.map(b => {
     const mkpV = b.markup_value || (b.total_cost * ((b.markup_percent || 0) / 100));
