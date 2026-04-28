@@ -147,7 +147,18 @@
     <h2 style="font-family:'Playfair Display'; font-size:24px; margin-bottom:24px;">Sales Tracking</h2>
     <div class="card" style="padding:0; overflow:hidden;">
       <table>
-        <thead><tr><th>Item</th><th>Batch</th><th>Qty</th><th>Price</th><th>Total</th><th>Actions</th></tr></thead>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Batch Date</th>
+                <th>Destination</th>
+                <th>Qty</th>
+                <th>Remaining</th>
+                <th>Price</th>
+                <th>Total</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
         <tbody id="sales-table-body"></tbody>
       </table>
     </div>
@@ -199,7 +210,13 @@
         <div class="form-group" style="flex: 2;">
           <label class="form-label">BATCH NAME</label>
           <select id="b-name" class="form-input" onchange="handleBatchSelect()">
-            </select>
+            <option value="">Select Item</option>
+            <option value="Cookies">Cookies</option>
+            <option value="Cookies Premium">Cookies Premium</option>
+            <option value="Brownies">Brownies</option>
+            <option value="Crinkles">Crinkles</option>
+            <option value="Others">Others (Manual Input)</option>
+          </select>
           <input type="text" id="b-name-manual" class="form-input" placeholder="Enter custom name" style="display:none; margin-top: -10px;">
         </div>
         <div class="form-group" style="flex: 1;"><label class="form-label">DESTINATION</label>
@@ -255,7 +272,8 @@ let ingredients = [], batches = [];
 async function loadData() {
   const { data: i } = await _sb.from('ingredients').select('*').order('name');
   const { data: b } = await _sb.from('batches').select('*').order('created_at', {ascending: false});
-  const { data: s } = await _sb.from('sales').select('*, batches(name)');
+  // UPDATED: Joined fetch for Sales page requirements
+  const { data: s } = await _sb.from('sales').select('*, batches(name, date, destination, yield_pcs)');
   ingredients = i || []; batches = b || [];
   renderDashboard(s || []); renderInventory(); renderBatches(); renderSales(s || []);
 }
@@ -311,17 +329,12 @@ function toggleIngredients() {
 
 function handleBatchSelect() {
   const name = document.getElementById('b-name').value;
-  const presets = ["Cookies", "Cookies Premium", "Brownies", "Crinkles"];
   const manualName = document.getElementById('b-name-manual');
   const manualPctRow = document.getElementById('manual-pct-row');
   const inputs = ['b-yield', 'b-labor', 'b-overhead', 'b-packaging', 'b-markup'];
 
   if (name === "Others") {
     manualName.style.display = "block";
-    manualPctRow.style.display = "flex";
-    inputs.forEach(id => document.getElementById(id).readOnly = false);
-  } else if (name !== "" && !presets.includes(name)) {
-    manualName.style.display = "none";
     manualPctRow.style.display = "flex";
     inputs.forEach(id => document.getElementById(id).readOnly = false);
   } else {
@@ -408,34 +421,19 @@ async function handleSaveBatch(event) {
 }
 
 function openBatchModal(id = null, duplicate = false) {
-  const form = document.querySelector('#modal-batch form');
-  form.reset();
+  const form = document.querySelector('#modal-batch form'); form.reset();
   document.getElementById('batch-ing-rows').innerHTML = "";
-  
-  const nameDropdown = document.getElementById('b-name');
-  const presets = ["Cookies", "Cookies Premium", "Brownies", "Crinkles", "Others", ""];
-  const uniqueNames = [...new Set(batches.map(b => b.name))].filter(n => !presets.includes(n));
-  
-  nameDropdown.innerHTML = `
-    <option value="">Select Item</option>
-    <option value="Cookies">Cookies</option>
-    <option value="Cookies Premium">Cookies Premium</option>
-    <option value="Brownies">Brownies</option>
-    <option value="Crinkles">Crinkles</option>
-    ${uniqueNames.sort().map(n => `<option value="${n}">${n}</option>`).join('')}
-    <option value="Others">Others (Manual Input)</option>
-  `;
-
   if (id) {
     const b = batches.find(x => x.id == id);
     document.getElementById('batch-id').value = duplicate ? "" : b.id;
-    nameDropdown.value = b.name;
-    document.getElementById('b-destination').value = b.destination; 
-    document.getElementById('b-date').value = b.date;
-    document.getElementById('b-yield').value = b.yield_pcs; 
-    document.getElementById('b-labor').value = b.labor_cost;
-    document.getElementById('b-overhead').value = b.overhead_cost; 
-    document.getElementById('b-packaging').value = b.packaging_cost;
+    document.getElementById('b-name').value = ["Cookies", "Cookies Premium", "Brownies", "Crinkles"].includes(b.name) ? b.name : "Others";
+    if (document.getElementById('b-name').value === "Others") {
+      document.getElementById('b-name-manual').value = b.name;
+      document.getElementById('b-name-manual').style.display = "block";
+    }
+    document.getElementById('b-destination').value = b.destination; document.getElementById('b-date').value = b.date;
+    document.getElementById('b-yield').value = b.yield_pcs; document.getElementById('b-labor').value = b.labor_cost;
+    document.getElementById('b-overhead').value = b.overhead_cost; document.getElementById('b-packaging').value = b.packaging_cost;
     document.getElementById('b-markup').value = b.markup_percent;
     if (b.ingredients_used) b.ingredients_used.forEach(ing => addBatchIngRow(ing.id, ing.qty));
     handleBatchSelect();
@@ -457,16 +455,14 @@ async function openSalesModal(batchId) {
 function renderBatches() {
   const from = document.getElementById('filter-from').value, to = document.getElementById('filter-to').value;
   const nf = document.getElementById('filter-name').value, df = document.getElementById('filter-dest').value;
+  const filtered = batches.filter(b => (!from || b.date >= from) && (!to || b.date <= to) && (!nf || b.name === nf) && (!df || b.destination === df));
   
-  // Sync unique names to filter dropdown
   const filterDropdown = document.getElementById('filter-name');
-  const presets = ["Cookies", "Cookies Premium", "Brownies", "Crinkles", ""];
-  const uniqueNames = [...new Set(batches.map(b => b.name))].filter(n => !presets.includes(n));
+  const uniqueNames = [...new Set(batches.map(b => b.name))];
   const currentFilter = filterDropdown.value;
-  filterDropdown.innerHTML = `<option value="">All Items</option><option value="Cookies">Cookies</option><option value="Cookies Premium">Cookies Premium</option><option value="Brownies">Brownies</option><option value="Crinkles">Crinkles</option>${uniqueNames.sort().map(n => `<option value="${n}">${n}</option>`).join('')}`;
+  filterDropdown.innerHTML = `<option value="">All Items</option>` + uniqueNames.map(n => `<option value="${n}">${n}</option>`).join('');
   filterDropdown.value = currentFilter;
 
-  const filtered = batches.filter(b => (!from || b.date >= from) && (!to || b.date <= to) && (!nf || b.name === nf) && (!df || b.destination === df));
   document.getElementById('batch-list-container').innerHTML = filtered.map(b => {
     const mkpV = b.markup_value || (b.total_cost * ((b.markup_percent || 0) / 100));
     return `<div class="card">
@@ -509,9 +505,25 @@ function renderInventory() {
   document.getElementById('ing-table-body').innerHTML = ingredients.map(i => `<tr><td>${i.name}</td><td>${i.category}</td><td>${i.unit}</td><td>₱${i.cpu.toFixed(2)}</td><td>${i.stock}</td><td>₱${(i.cpu*i.stock).toFixed(2)}</td><td><button class="action-btn" onclick="openIngModal(${i.id})">Edit</button> <button class="action-btn btn-del" onclick="deleteItem('ingredients',${i.id})">Del</button></td></tr>`).join('');
 }
 
+// UPDATED: Focused render logic for Sales page only
 function renderSales(sData) {
   const body = document.getElementById('sales-table-body');
-  if (body) body.innerHTML = sData.map(s => `<tr><td>${s.item_name}</td><td>${s.batches?.name || ''}</td><td>${s.qty_sold}</td><td>₱${s.unit_price.toFixed(2)}</td><td>₱${s.total_revenue.toFixed(2)}</td><td><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td></tr>`).join('');
+  if (body) {
+    body.innerHTML = sData.map(s => {
+        const yieldAmt = s.batches?.yield_pcs || 0;
+        const remaining = yieldAmt - s.qty_sold;
+        return `<tr>
+            <td><b>${s.item_name}</b></td>
+            <td>${s.batches?.date || 'N/A'}</td>
+            <td><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${s.batches?.destination || 'N/A'}</span></td>
+            <td>${s.qty_sold}</td>
+            <td style="font-weight:bold; color: ${remaining <= 5 ? 'var(--rose)' : 'var(--sage)'}">${remaining}</td>
+            <td>₱${s.unit_price.toFixed(2)}</td>
+            <td>₱${s.total_revenue.toFixed(2)}</td>
+            <td><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td>
+        </tr>`;
+    }).join('');
+  }
 }
 
 function clearFilters() {
