@@ -22,14 +22,12 @@
 
   body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-main); font-size: 14px; display: flex; flex-direction: column; min-height: 100vh; }
   
-  /* AUTH UI */
   #auth-container { position: fixed; inset: 0; background: var(--cream); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .auth-card { background: var(--warm-white); padding: 40px; border-radius: var(--radius); box-shadow: var(--shadow); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border); }
   .auth-logo { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 20px; object-fit: cover; border: 2px solid var(--sage); }
   
   #app-wrapper { display: none; flex-direction: column; min-height: 100vh; }
 
-  /* NAVIGATION & TOPBAR */
   .topbar { background: var(--warm-white); border-bottom: 1px solid var(--border); padding: 10px 24px; display: flex; align-items: center; justify-content: space-between; min-height: 70px; position: sticky; top: 0; z-index: 100; flex-wrap: wrap; gap: 15px; }
   .brand-block { display: flex; align-items: center; gap: 12px; }
   .logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
@@ -45,26 +43,18 @@
   .page { display: none; } 
   .page.active { display: block; }
 
-  /* RESPONSIVE GRIDS */
   .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
   .dashboard-main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
   .dashboard-sub-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; }
-
-  @media (max-width: 992px) {
-    .dashboard-main-grid, .dashboard-sub-grid { grid-template-columns: 1fr; }
-  }
 
   .stat-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
   .stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
   .stat-val { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--brown-dark); }
   
-  /* CONDITIONAL COLORS */
   .val-pos { color: var(--pos) !important; }
   .val-neg { color: var(--neg) !important; }
 
   .card { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
-  .card h3 { font-family: 'Playfair Display', serif; margin-bottom: 5px; font-size: 18px; }
-  
   .chart-container { position: relative; height: 300px; width: 100%; margin-top: 15px; }
 
   .filter-bar { background: var(--warm-white); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 15px; }
@@ -112,24 +102,25 @@
     body { background: white; padding: 0; }
     .topbar, .nav-tabs, .filter-bar, .btn, .action-btn, footer, #chart-period, .dashboard-sub-grid { display: none !important; }
     .main { padding: 0; max-width: 100%; margin: 0; }
-    .card { box-shadow: none; border: 1px solid #eee; break-inside: avoid; }
+    .card { box-shadow: none; border: 1px solid #eee; break-inside: avoid; margin-bottom: 10px; }
     .table-container { overflow: visible; }
-    table { min-width: 100%; }
-    th { background: #eee !important; color: black !important; }
+    table { min-width: 100%; border: 1px solid #ddd; }
+    th { background: #f5f5f5 !important; color: black !important; font-weight: bold; border: 1px solid #ddd; }
+    td { border: 1px solid #ddd; }
     .page { display: none !important; }
     #page-sales { display: block !important; }
-    .print-only { display: block !important; margin-bottom: 20px; }
+    .print-only { display: block !important; }
   }
   .print-only { display: none; }
+  .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .print-stat { padding: 10px; border-left: 3px solid var(--brown-mid); background: #fafafa; }
 
   @media (max-width: 600px) {
     .topbar { justify-content: center; }
     .brand-block { width: 100%; justify-content: center; }
     .nav-tabs { width: 100%; }
     .page-header { flex-direction: column; align-items: flex-start !important; gap: 15px; }
-    .page-header div { width: 100%; flex-direction: column; }
     .page-header select, .page-header button { width: 100% !important; }
-    .chart-container { height: 220px; }
   }
 </style>
 </head>
@@ -278,18 +269,30 @@
 
     <div class="page" id="page-sales">
         <div class="print-only">
-          <div style="display:flex; align-items:center; gap:20px; border-bottom: 2px solid var(--brown-dark); padding-bottom: 20px;">
-            <img src="https://lh3.googleusercontent.com/a-/ALV-UjUeccNPa_aqmec1NMIUVJMeteDoopgCvhS7ZnnmDET9Mu_HlBE=s400-p" width="80">
+          <div style="display:flex; align-items:center; gap:20px; border-bottom: 3px solid var(--brown-dark); padding-bottom: 20px; margin-bottom: 20px;">
+            <img src="https://lh3.googleusercontent.com/a-/ALV-UjUeccNPa_aqmec1NMIUVJMeteDoopgCvhS7ZnnmDET9Mu_HlBE=s400-p" width="80" style="border-radius:50%">
             <div>
-              <h1 style="font-family:'Playfair Display';">Sweet Ted Cafe</h1>
-              <p>Official Sales Report | Generated on <span id="print-date"></span></p>
+              <h1 style="font-family:'Playfair Display'; margin:0;">Sweet Ted Cafe</h1>
+              <p style="margin:0; text-transform:uppercase; font-size:12px; letter-spacing:1px;">Comprehensive Sales & Cost Analysis Report</p>
+              <p style="font-size:12px; color:#555;">Report Date: <span id="print-date"></span></p>
+            </div>
+          </div>
+
+          <div class="print-grid">
+            <div class="card" style="padding:15px;">
+              <h4 style="margin-bottom:10px;">📈 Performance Insights</h4>
+              <div id="print-insights-content"></div>
+            </div>
+            <div class="card" style="padding:15px;">
+              <h4 style="margin-bottom:10px;">💰 Financial Breakdown</h4>
+              <div id="print-financial-content"></div>
             </div>
           </div>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
           <h2 style="font-family:'Playfair Display'; font-size:24px;">Sales Tracking</h2>
-          <button class="btn btn-primary" onclick="window.print()">🖨️ Print Report</button>
+          <button class="btn btn-primary" onclick="window.print()">🖨️ Print Sales Report</button>
         </div>
 
         <div class="filter-bar">
@@ -327,7 +330,8 @@
           </div>
         </div>
         <div class="print-only" style="margin-top:30px; text-align:right;">
-          <h3 id="print-total-sales" style="font-family:'Playfair Display';"></h3>
+          <h2 id="print-total-sales" style="font-family:'Playfair Display'; color:var(--brown-dark);"></h2>
+          <p style="font-size:11px; color:#777;">* Total reflects gross revenue based on the active filters above.</p>
         </div>
     </div>
     </div>
@@ -461,7 +465,7 @@ checkUser();
 async function loadData() {
   const { data: i } = await _sb.from('ingredients').select('*').order('name');
   const { data: b } = await _sb.from('batches').select('*').order('created_at', {ascending: false});
-  const { data: s } = await _sb.from('sales').select('*, batches(name, date, destination, yield_pcs)');
+  const { data: s } = await _sb.from('sales').select('*, batches(name, date, destination, yield_pcs, total_cost, labor_cost, overhead_cost, packaging_cost, cafe_percentage_cost)');
   ingredients = i || []; batches = b || []; allSalesData = s || [];
   refreshDashboard(); renderInventory(); renderBatches(); renderSales(allSalesData);
   updateSalesItemDropdown(); updateDashboardFilterDropdown();
@@ -734,10 +738,45 @@ function renderSales(sData) {
   if (body) {
     body.innerHTML = sData.map(s => `<tr><td><b>${s.item_name}</b></td><td>${s.batches?.date || 'N/A'}</td><td><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${s.batches?.destination || 'N/A'}</span></td><td>${s.qty_sold}</td><td style="font-weight:bold; color:var(--sage)">${(s.batches?.yield_pcs || 0) - s.qty_sold}</td><td>₱${s.unit_price.toFixed(2)}</td><td>₱${s.total_revenue.toFixed(2)}</td><td class="btn"><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td></tr>`).join('');
     
-    // Prepare Print Data
+    // Prepare Print Data & Insights
     const totalRev = sData.reduce((a,c) => a + c.total_revenue, 0);
-    document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-PH', { dateStyle: 'long' });
-    document.getElementById('print-total-sales').innerText = "Total Revenue: ₱" + totalRev.toLocaleString(undefined, {minimumFractionDigits: 2});
+    const counts = {};
+    let tLabor = 0, tOver = 0, tPack = 0, tCafe = 0, tTotalCost = 0;
+
+    sData.forEach(s => {
+        counts[s.item_name] = (counts[s.item_name] || 0) + s.qty_sold;
+        if(s.batches) {
+            tLabor += (s.batches.labor_cost || 0);
+            tOver += (s.batches.overhead_cost || 0);
+            tPack += (s.batches.packaging_cost || 0);
+            tCafe += (s.batches.cafe_percentage_cost || 0);
+            tTotalCost += (s.batches.total_cost || 0);
+        }
+    });
+
+    const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+    const best = sorted.length ? sorted[0] : ["None", 0];
+    const least = sorted.length ? sorted[sorted.length-1] : ["None", 0];
+
+    // Update Print Insights Content
+    document.getElementById('print-insights-content').innerHTML = `
+      <div class="print-stat"><b>Top Selling Item:</b> ${best[0]} (${best[1]} pcs)</div>
+      <div class="print-stat" style="margin-top:10px;"><b>Least Selling Item:</b> ${least[0]} (${least[1]} pcs)</div>
+    `;
+
+    // Update Print Financial Content
+    document.getElementById('print-financial-content').innerHTML = `
+      <div style="font-size:12px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Labor:</span><span>₱${tLabor.toFixed(2)}</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Overhead:</span><span>₱${tOver.toFixed(2)}</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Packaging:</span><span>₱${tPack.toFixed(2)}</span></div>
+        <div style="display:flex; justify-content:space-between; border-top:1px solid #ddd; padding-top:5px; margin-bottom:5px;"><b>Cafe Percentage (10%):</b><b>₱${tCafe.toFixed(2)}</b></div>
+        <div style="display:flex; justify-content:space-between; border-top:2px solid #ddd; padding-top:5px;"><b>Estimated Total Cost:</b><b>₱${tTotalCost.toFixed(2)}</b></div>
+      </div>
+    `;
+
+    document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-PH', { dateStyle: 'long', timeStyle: 'short' });
+    document.getElementById('print-total-sales').innerText = "Grand Total Revenue: ₱" + totalRev.toLocaleString(undefined, {minimumFractionDigits: 2});
   }
 }
 
