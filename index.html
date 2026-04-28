@@ -145,19 +145,47 @@
 
   <div class="page" id="page-sales">
     <h2 style="font-family:'Playfair Display'; font-size:24px; margin-bottom:24px;">Sales Tracking</h2>
+    
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label class="form-label">Item</label>
+        <select id="sales-filter-item" class="form-input" style="margin-bottom:0; width:160px;" onchange="applySalesFilters()">
+          <option value="">All Items</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="form-label">Destination</label>
+        <select id="sales-filter-dest" class="form-input" style="margin-bottom:0; width:160px;" onchange="applySalesFilters()">
+          <option value="">All Destinations</option>
+          <option value="Online Orders">Online Orders</option>
+          <option value="Bevi & Go">Bevi & Go</option>
+          <option value="Personal Consumption">Personal Consumption</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="form-label">From</label>
+        <input type="date" id="sales-filter-from" class="form-input" style="margin-bottom:0; width:140px;" onchange="applySalesFilters()">
+      </div>
+      <div class="filter-group">
+        <label class="form-label">To</label>
+        <input type="date" id="sales-filter-to" class="form-input" style="margin-bottom:0; width:140px;" onchange="applySalesFilters()">
+      </div>
+      <button class="btn btn-ghost" style="height:38px;" onclick="clearSalesFilters()">Clear Filters</button>
+    </div>
+
     <div class="card" style="padding:0; overflow:hidden;">
       <table>
         <thead>
-            <tr>
-                <th>Item</th>
-                <th>Batch Date</th>
-                <th>Destination</th>
-                <th>Qty</th>
-                <th>Remaining</th>
-                <th>Price</th>
-                <th>Total</th>
-                <th>Actions</th>
-            </tr>
+          <tr>
+            <th>Item</th>
+            <th>Batch Date</th>
+            <th>Destination</th>
+            <th>Qty</th>
+            <th>Remaining</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Actions</th>
+          </tr>
         </thead>
         <tbody id="sales-table-body"></tbody>
       </table>
@@ -267,15 +295,22 @@ const SUPABASE_URL = 'https://bczzmvhmxrkjvmohqkgx.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_jR5_T-YuLx1fZ_7x7K6e7w_MXypy-fS';
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let ingredients = [], batches = [];
+let ingredients = [], batches = [], allSalesData = [];
 
 async function loadData() {
   const { data: i } = await _sb.from('ingredients').select('*').order('name');
   const { data: b } = await _sb.from('batches').select('*').order('created_at', {ascending: false});
-  // UPDATED: Joined fetch for Sales page requirements
   const { data: s } = await _sb.from('sales').select('*, batches(name, date, destination, yield_pcs)');
-  ingredients = i || []; batches = b || [];
-  renderDashboard(s || []); renderInventory(); renderBatches(); renderSales(s || []);
+  
+  ingredients = i || []; 
+  batches = b || [];
+  allSalesData = s || [];
+  
+  renderDashboard(allSalesData); 
+  renderInventory(); 
+  renderBatches(); 
+  renderSales(allSalesData);
+  updateSalesItemDropdown();
 }
 
 function showPage(p) {
@@ -505,24 +540,58 @@ function renderInventory() {
   document.getElementById('ing-table-body').innerHTML = ingredients.map(i => `<tr><td>${i.name}</td><td>${i.category}</td><td>${i.unit}</td><td>₱${i.cpu.toFixed(2)}</td><td>${i.stock}</td><td>₱${(i.cpu*i.stock).toFixed(2)}</td><td><button class="action-btn" onclick="openIngModal(${i.id})">Edit</button> <button class="action-btn btn-del" onclick="deleteItem('ingredients',${i.id})">Del</button></td></tr>`).join('');
 }
 
-// UPDATED: Focused render logic for Sales page only
+// SALES PAGE LOGIC
+function updateSalesItemDropdown() {
+  const dropdown = document.getElementById('sales-filter-item');
+  const uniqueItems = [...new Set(allSalesData.map(s => s.item_name))];
+  const current = dropdown.value;
+  dropdown.innerHTML = `<option value="">All Items</option>` + uniqueItems.map(n => `<option value="${n}">${n}</option>`).join('');
+  dropdown.value = current;
+}
+
+function applySalesFilters() {
+  const item = document.getElementById('sales-filter-item').value;
+  const dest = document.getElementById('sales-filter-dest').value;
+  const from = document.getElementById('sales-filter-from').value;
+  const to = document.getElementById('sales-filter-to').value;
+
+  const filtered = allSalesData.filter(s => {
+    const bDate = s.batches?.date || '';
+    const bDest = s.batches?.destination || '';
+    return (!item || s.item_name === item) &&
+           (!dest || bDest === dest) &&
+           (!from || bDate >= from) &&
+           (!to || bDate <= to);
+  });
+
+  renderSales(filtered);
+}
+
+function clearSalesFilters() {
+  document.getElementById('sales-filter-item').value = "";
+  document.getElementById('sales-filter-dest').value = "";
+  document.getElementById('sales-filter-from').value = "";
+  document.getElementById('sales-filter-to').value = "";
+  renderSales(allSalesData);
+}
+
 function renderSales(sData) {
   const body = document.getElementById('sales-table-body');
   if (body) {
     body.innerHTML = sData.map(s => {
-        const yieldAmt = s.batches?.yield_pcs || 0;
-        const remaining = yieldAmt - s.qty_sold;
-        return `<tr>
-            <td><b>${s.item_name}</b></td>
-            <td>${s.batches?.date || 'N/A'}</td>
-            <td><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${s.batches?.destination || 'N/A'}</span></td>
-            <td>${s.qty_sold}</td>
-            <td style="font-weight:bold; color: ${remaining <= 5 ? 'var(--rose)' : 'var(--sage)'}">${remaining}</td>
-            <td>₱${s.unit_price.toFixed(2)}</td>
-            <td>₱${s.total_revenue.toFixed(2)}</td>
-            <td><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td>
-        </tr>`;
-    }).join('');
+      const yieldAmt = s.batches?.yield_pcs || 0;
+      const remaining = yieldAmt - s.qty_sold;
+      return `<tr>
+        <td><b>${s.item_name}</b></td>
+        <td>${s.batches?.date || 'N/A'}</td>
+        <td><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${s.batches?.destination || 'N/A'}</span></td>
+        <td>${s.qty_sold}</td>
+        <td style="font-weight:bold; color: ${remaining <= 5 ? 'var(--rose)' : 'var(--sage)'}">${remaining}</td>
+        <td>₱${s.unit_price.toFixed(2)}</td>
+        <td>₱${s.total_revenue.toFixed(2)}</td>
+        <td><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">No records found.</td></tr>';
   }
 }
 
