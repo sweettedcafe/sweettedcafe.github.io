@@ -55,8 +55,7 @@
   .card { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
   .card h3 { font-family: 'Playfair Display', serif; margin-bottom: 5px; font-size: 18px; }
 
-  /* FILTERS & TABLES */
-  .filter-bar { background: var(--warm-white); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 15px; }
+  /* TABLES */
   .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { width: 100%; border-collapse: collapse; min-width: 800px; }
   th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #fafcfa; }
@@ -74,11 +73,11 @@
   .btn-save { background: #4a6d55; color: white; width: 100%; justify-content: center; }
   .btn-sales-trigger { background: #fdf2f0; color: #d4856a; border: none; font-size: 12px; padding: 5px 12px; }
   .form-input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; margin-bottom: 15px; }
-  .form-row { display: flex; gap: 15px; flex-wrap: wrap; }
-  .form-group { flex: 1; min-width: 140px; }
+  .form-row { display: flex; gap: 15px; }
+  .form-group { flex: 1; }
   .form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px; }
 
-  /* BATCH RECORD ELEMENTS (ORIGINAL) */
+  /* BATCH RECORD ELEMENTS */
   .batch-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
   .summary-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
   .summary-box { background: #f9fbf9; border-radius: 10px; padding: 20px; border: 1px solid #edf2ed; margin-top: 15px; }
@@ -107,8 +106,7 @@
     .dashboard-header div { width: 100%; flex-direction: column; }
     .dashboard-header .form-input, .dashboard-header .btn { width: 100% !important; }
     .batch-summary-grid { grid-template-columns: repeat(2, 1fr); }
-    .filter-bar { flex-direction: column; align-items: stretch; }
-    .filter-group { width: 100%; }
+    .form-row { flex-direction: column; gap: 0; }
     .modal { padding: 20px; }
     .stat-val { font-size: 22px; }
   }
@@ -124,12 +122,12 @@
       <h2 style="font-family:'Playfair Display'; margin-bottom:10px;">Admin Login</h2>
       <p style="color:var(--text-muted); font-size:12px; margin-bottom:25px;">Enter credentials to access the system.</p>
       <form id="login-form" onsubmit="handleLogin(event)">
-          <div style="text-align:left;">
-            <label class="form-label">Email Address</label>
-            <input type="email" id="login-email" class="form-input" placeholder="admin@sweetted.com" required>
-            <label class="form-label">Password</label>
-            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
-          </div>
+        <div style="text-align:left;">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="admin@sweetted.com" required>
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+        </div>
         <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:10px;">Sign In</button>
       </form>
       <p id="auth-error" style="color:var(--rose); font-size:12px; margin-top:15px; display:none;"></p>
@@ -152,112 +150,88 @@
     </div>
 
     <div class="main">
-    <div class="page active" id="page-dashboard">
-        <div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-          <h1 style="font-family:'Playfair Display'; font-size:28px;">Good morning! 🐻</h1>
-          <div style="display:flex; gap:10px;">
-              <select id="dash-filter-item" class="form-input" style="margin-bottom:0; width:150px;" onchange="refreshDashboard()"><option value="">All Items</option></select>
-              <select id="dash-filter-dest" class="form-input" style="margin-bottom:0; width:150px;" onchange="refreshDashboard()">
-                <option value="">All Destinations</option>
-                <option value="Online Orders">Online Orders</option>
-                <option value="Bevi & Go">Bevi & Go</option>
-                <option value="Personal Consumption">Personal Consumption</option>
-              </select>
-              <button class="btn btn-primary" onclick="openBatchModal()">+ New Batch</button>
-          </div>
-        </div>
-
-        <div class="grid-4">
-          <div class="stat-card"><div class="stat-label">Ingredients</div><div class="stat-val" id="d-ing">0</div></div>
-          <div class="stat-card"><div class="stat-label">Total Batches</div><div class="stat-val" id="d-batch">0</div></div>
-          <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-val" id="d-rev">₱0.00</div></div>
-          <div class="stat-card"><div class="stat-label">Total Profit</div><div class="stat-val" id="d-profit">₱0.00</div></div>
-        </div>
-
-        <div class="dash-main-split">
-          <div class="card">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3>Sales Performance</h3>
-                <select id="chart-period" class="form-input" style="width:120px; margin:0;" onchange="renderSalesChart()">
-                    <option value="month" selected>This Month</option>
+      <div class="page active" id="page-dashboard">
+          <div class="dashboard-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <h1 style="font-family:'Playfair Display'; font-size:28px;">Good morning! 🐻</h1>
+            <div style="display:flex; gap:10px;">
+                <select id="dash-filter-item" class="form-input" style="margin-bottom:0; width:150px;" onchange="refreshDashboard()"><option value="">All Items</option></select>
+                <select id="dash-filter-dest" class="form-input" style="margin-bottom:0; width:150px;" onchange="refreshDashboard()">
+                  <option value="">All Destinations</option>
+                  <option value="Online Orders">Online Orders</option>
+                  <option value="Bevi & Go">Bevi & Go</option>
                 </select>
-              </div>
-              <div class="chart-container">
-                <canvas id="salesChart"></canvas>
-              </div>
-          </div>
-          <div class="card">
-              <h3>Marketing Insights</h3>
-              <p class="stat-label" style="margin-top:15px;">Top Selling Item</p>
-              <div id="best-seller" class="insight-pill pill-best">Calculating...</div>
-              <p class="stat-label" style="margin-top:20px;">Least Selling Item</p>
-              <div id="least-seller" class="insight-pill pill-least">Calculating...</div>
-              <div style="margin-top:25px; padding-top:15px; border-top:1px solid var(--border);">
-                  <p class="stat-label">Destination Split</p>
-                  <div id="dest-split" style="font-size:12px; color:var(--text-muted); line-height:2;"></div>
-              </div>
-          </div>
-        </div>
-
-        <div class="dash-bottom-split">
-          <div class="card"><h3>Recent Batches</h3><div id="recent-batch-list"></div></div>
-          <div class="card"><h3>Low Stock Alert</h3><div id="low-stock-list"></div></div>
-        </div>
-    </div>
-
-    <div class="page" id="page-ingredients">
-        <div style="display:flex; justify-content:space-between; margin-bottom:24px; flex-wrap: wrap; gap:10px;">
-          <h2 style="font-family:'Playfair Display'; font-size:24px;">Inventory</h2>
-          <button class="btn btn-primary" onclick="openIngModal()">+ Add Ingredient</button>
-        </div>
-        <div class="card" style="padding:0; overflow:hidden;">
-          <div class="table-responsive">
-            <table>
-                <thead><tr><th>Ingredient</th><th>Category</th><th>Unit</th><th>Cost/Unit</th><th>Stock</th><th>Value</th><th>Actions</th></tr></thead>
-                <tbody id="ing-table-body"></tbody>
-            </table>
-          </div>
-        </div>
-    </div>
-
-    <div class="page" id="page-batches">
-        <div style="display:flex; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:10px;">
-          <h2 style="font-family:'Playfair Display'; font-size:24px;">Batch Records</h2>
-          <button class="btn btn-primary" onclick="openBatchModal()">+ New Batch</button>
-        </div>
-        <div class="filter-bar">
-            <div class="filter-group">
-                <label class="form-label">Item</label>
-                <select id="filter-name" class="form-input" style="margin-bottom:0; width:160px;" onchange="renderBatches()"><option value="">All Items</option></select>
+                <button class="btn btn-primary" onclick="openBatchModal()">+ New Batch</button>
             </div>
-            <div class="filter-group">
-                <label class="form-label">Destination</label>
-                <select id="filter-dest" class="form-input" style="margin-bottom:0; width:160px;" onchange="renderBatches()">
-                    <option value="">All Destinations</option>
-                    <option value="Online Orders">Online Orders</option>
-                    <option value="Bevi & Go">Bevi & Go</option>
-                    <option value="Personal Consumption">Personal Consumption</option>
-                </select>
-            </div>
-            <button class="btn btn-ghost" onclick="clearFilters()" style="height:38px;">Clear Filters</button>
-        </div>
-        <div id="batch-list-container"></div>
-    </div>
-
-    <div class="page" id="page-sales">
-        <h2 style="font-family:'Playfair Display'; font-size:24px; margin-bottom:24px;">Sales Tracking</h2>
-        <div class="card" style="padding:0; overflow:hidden;">
-          <div class="table-responsive">
-            <table>
-                <thead><tr><th>Item</th><th>Batch Date</th><th>Dest.</th><th>Qty Sold</th><th>Rem.</th><th>Price</th><th>Total</th><th>Actions</th></tr></thead>
-                <tbody id="sales-table-body"></tbody>
-            </table>
           </div>
-        </div>
-    </div>
+
+          <div class="grid-4">
+            <div class="stat-card"><div class="stat-label">Ingredients</div><div class="stat-val" id="d-ing">0</div></div>
+            <div class="stat-card"><div class="stat-label">Total Batches</div><div class="stat-val" id="d-batch">0</div></div>
+            <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-val" id="d-rev">₱0.00</div></div>
+            <div class="stat-card"><div class="stat-label">Total Profit</div><div class="stat-val" id="d-profit">₱0.00</div></div>
+          </div>
+
+          <div class="dash-main-split">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                  <h3>Sales Performance</h3>
+                </div>
+                <div class="chart-container">
+                  <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h3>Marketing Insights</h3>
+                <p class="stat-label" style="margin-top:15px;">Top Selling Item</p>
+                <div id="best-seller" class="insight-pill pill-best">Calculating...</div>
+                <p class="stat-label" style="margin-top:20px;">Least Selling Item</p>
+                <div id="least-seller" class="insight-pill pill-least">Calculating...</div>
+            </div>
+          </div>
+
+          <div class="dash-bottom-split">
+            <div class="card"><h3>Recent Batches</h3><div id="recent-batch-list"></div></div>
+            <div class="card"><h3>Low Stock Alert</h3><div id="low-stock-list"></div></div>
+          </div>
+      </div>
+
+      <div class="page" id="page-ingredients">
+          <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
+            <h2 style="font-family:'Playfair Display'; font-size:24px;">Inventory</h2>
+            <button class="btn btn-primary" onclick="openIngModal()">+ Add Ingredient</button>
+          </div>
+          <div class="card" style="padding:0; overflow:hidden;">
+            <div class="table-responsive">
+              <table>
+                  <thead><tr><th>Ingredient</th><th>Category</th><th>Unit</th><th>Cost/Unit</th><th>Stock</th><th>Value</th><th>Actions</th></tr></thead>
+                  <tbody id="ing-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+      </div>
+
+      <div class="page" id="page-batches">
+          <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
+            <h2 style="font-family:'Playfair Display'; font-size:24px;">Batch Records</h2>
+            <button class="btn btn-primary" onclick="openBatchModal()">+ New Batch</button>
+          </div>
+          <div id="batch-list-container"></div>
+      </div>
+
+      <div class="page" id="page-sales">
+          <h2 style="font-family:'Playfair Display'; font-size:24px; margin-bottom:24px;">Sales Tracking</h2>
+          <div class="card" style="padding:0; overflow:hidden;">
+            <div class="table-responsive">
+              <table>
+                  <thead><tr><th>Item</th><th>Batch Date</th><th>Dest.</th><th>Qty Sold</th><th>Rem.</th><th>Price</th><th>Total</th><th>Actions</th></tr></thead>
+                  <tbody id="sales-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+      </div>
     </div>
 
-    <footer>© 2026 Sweet Ted. All rights reserved 🐻 </footer>
+    <footer>2026 Sweet Ted Cafe. All rights reserved.🐻</footer>
 </div>
 
 <div id="modal-ing" class="modal-bg">
@@ -306,7 +280,7 @@
             <input type="text" id="b-name-manual" class="form-input" placeholder="Enter custom name" style="display:none; margin-top:-10px;">
           </div>
           <div class="form-group"><label class="form-label">DESTINATION</label>
-            <select id="b-destination" class="form-input"><option value="Online Orders">Online Orders</option><option value="Bevi & Go">Bevi & Go</option><option value="Personal Consumption">Personal Consumption</option></select>
+            <select id="b-destination" class="form-input"><option value="Online Orders">Online Orders</option><option value="Bevi & Go">Bevi & Go</option></select>
           </div>
         </div>
         <div class="form-row">
@@ -352,43 +326,27 @@ const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let ingredients = [], batches = [], allSalesData = [], salesChart = null;
 
-// --- AUTH LOGIC ---
 async function checkUser() {
   const { data: { user } } = await _sb.auth.getUser();
-  if (user) {
-    document.getElementById('auth-container').style.display = 'none';
-    document.getElementById('app-wrapper').style.display = 'flex';
-    loadData();
-  }
+  if (user) { document.getElementById('auth-container').style.display = 'none'; document.getElementById('app-wrapper').style.display = 'flex'; loadData(); }
 }
+
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
   const { error } = await _sb.auth.signInWithPassword({ email, password });
-  if (error) { 
-      document.getElementById('auth-error').innerText = error.message; 
-      document.getElementById('auth-error').style.display = 'block'; 
-  } else { location.reload(); }
+  if (error) { document.getElementById('auth-error').innerText = error.message; document.getElementById('auth-error').style.display = 'block'; } else { location.reload(); }
 }
 async function handleLogout() { await _sb.auth.signOut(); location.reload(); }
 checkUser();
 
-// --- DATA LOADING ---
 async function loadData() {
   const { data: i } = await _sb.from('ingredients').select('*').order('name');
   const { data: b } = await _sb.from('batches').select('*').order('created_at', {ascending: false});
   const { data: s } = await _sb.from('sales').select('*, batches(name, date, destination, yield_pcs)');
   ingredients = i || []; batches = b || []; allSalesData = s || [];
   refreshDashboard(); renderInventory(); renderBatches(); renderSales(allSalesData);
-  updateFilters();
-}
-
-function updateFilters() {
-    const names = [...new Set(batches.map(b => b.name))].sort();
-    const html = `<option value="">All Items</option>` + names.map(n => `<option value="${n}">${n}</option>`).join('');
-    document.getElementById('dash-filter-item').innerHTML = html;
-    document.getElementById('filter-name').innerHTML = html;
 }
 
 function refreshDashboard() {
@@ -403,7 +361,6 @@ function refreshDashboard() {
   const cost = fBatches.reduce((a, c) => a + (c.total_cost || 0), 0);
   document.getElementById('d-rev').innerText = "₱" + rev.toFixed(2);
   document.getElementById('d-profit').innerText = "₱" + (rev - cost).toFixed(2);
-
   renderSalesChart(fSales);
   renderDashboardLists(fBatches);
   renderInsights(fSales);
@@ -411,57 +368,50 @@ function refreshDashboard() {
 
 function renderInsights(sData) {
     if (!sData.length) return;
-    const counts = {}, dests = {};
-    sData.forEach(s => {
-        counts[s.item_name] = (counts[s.item_name] || 0) + s.qty_sold;
-        const d = s.batches?.destination || 'Unset';
-        dests[d] = (dests[d] || 0) + s.total_revenue;
-    });
+    const counts = {};
+    sData.forEach(s => { counts[s.item_name] = (counts[s.item_name] || 0) + s.qty_sold; });
     const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
-    document.getElementById('best-seller').innerText = sorted[0][0] + ` (${sorted[0][1]} sold)`;
-    document.getElementById('least-seller').innerText = sorted[sorted.length-1][0] + ` (${sorted[sorted.length-1][1]} sold)`;
-    let dHtml = ""; Object.entries(dests).forEach(([k,v]) => { dHtml += `<div><b>${k}:</b> ₱${v.toFixed(2)}</div>`; });
-    document.getElementById('dest-split').innerHTML = dHtml;
+    document.getElementById('best-seller').innerText = sorted[0][0];
+    document.getElementById('least-seller').innerText = sorted[sorted.length-1][0];
 }
 
 function renderSalesChart(sData) {
     const ctx = document.getElementById('salesChart').getContext('2d');
     if (salesChart) salesChart.destroy();
     const map = {};
-    sData.slice(-10).forEach(s => {
+    sData.slice(-7).forEach(s => {
         const d = new Date(s.batches?.date || s.created_at).toLocaleDateString(undefined, {month:'short', day:'numeric'});
         map[d] = (map[d] || 0) + s.total_revenue;
     });
     salesChart = new Chart(ctx, {
         type: 'line',
-        data: { labels: Object.keys(map), datasets: [{ data: Object.values(map), borderColor: '#4a6d55', backgroundColor: 'rgba(74,109,85,0.1)', fill: true, tension: 0.4 }] },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks:{font:{size:10}} }, x: { ticks:{font:{size:10}} } } }
+        data: { labels: Object.keys(map), datasets: [{ data: Object.values(map), borderColor: '#4a6d55', tension: 0.4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 }
 
 function renderDashboardLists(bData) {
     document.getElementById('recent-batch-list').innerHTML = bData.slice(0, 5).map(b => `
-      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
-        <div><div style="font-weight:600;">${b.name}</div><div style="font-size:11px; color:var(--text-muted);">${b.date}</div></div>
-        <div style="font-weight:700;">₱${(b.total_cost || 0).toFixed(2)}</div>
+      <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
+        <span>${b.name}</span><strong>₱${b.total_cost.toFixed(2)}</strong>
       </div>`).join('');
     document.getElementById('low-stock-list').innerHTML = ingredients.filter(i => i.stock <= (i.low_stock_threshold || 5)).map(i => `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
-            <div style="font-weight:600;">${i.name}</div><div style="color:var(--rose); font-weight:700;">${i.stock} ${i.unit}</div>
-        </div>`).join('') || '<p style="color:var(--sage); font-size:12px;">Stock healthy!</p>';
+        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
+            <span>${i.name}</span><span style="color:var(--rose);">${i.stock} ${i.unit}</span>
+        </div>`).join('');
 }
 
 function showPage(p) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
-  if(event && event.currentTarget.classList) event.currentTarget.classList.add('active');
+  if(event) event.currentTarget.classList.add('active');
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-// --- INVENTORY ACTIONS ---
+// INVENTORY LOGIC
 function renderInventory() {
   document.getElementById('ing-table-body').innerHTML = ingredients.map(i => `<tr>
     <td>${i.name}</td><td>${i.category || 'General'}</td><td>${i.unit}</td>
@@ -488,29 +438,17 @@ async function handleSaveIngredient(e) {
   e.preventDefault();
   const id = document.getElementById('ing-id').value;
   const cpu = parseFloat(document.getElementById('i-cost-bulk').value) / (parseFloat(document.getElementById('i-qty-bulk').value) || 1);
-  const data = { 
-      name: document.getElementById('i-name').value, 
-      unit: document.getElementById('i-unit').value, 
-      cpu: cpu, 
-      stock: parseFloat(document.getElementById('i-stock').value), 
-      low_stock_threshold: parseFloat(document.getElementById('i-alert').value) || 0 
-  };
+  const data = { name: document.getElementById('i-name').value, unit: document.getElementById('i-unit').value, cpu: cpu, stock: parseFloat(document.getElementById('i-stock').value), low_stock_threshold: parseFloat(document.getElementById('i-alert').value) };
   const { error } = id ? await _sb.from('ingredients').update(data).eq('id', id) : await _sb.from('ingredients').insert([data]);
   if (error) alert(error.message); else { closeModal('modal-ing'); loadData(); }
 }
 
-// --- BATCH ACTIONS ---
+// BATCH LOGIC
 function handleBatchSelect() {
   const name = document.getElementById('b-name').value;
   const manual = document.getElementById('b-name-manual');
-  const fields = ['b-yield', 'b-labor', 'b-overhead', 'b-packaging', 'b-markup'];
-  
-  if (name === "Others") {
-    manual.style.display = "block";
-    fields.forEach(f => document.getElementById(f).readOnly = false);
-  } else {
+  if (name === "Others") { manual.style.display = "block"; } else {
     manual.style.display = "none";
-    fields.forEach(f => document.getElementById(f).readOnly = true);
     if (name === "Cookies") { document.getElementById('b-yield').value = 15; document.getElementById('b-markup').value = 94; }
     else if (name === "Cookies Premium") { document.getElementById('b-yield').value = 15; document.getElementById('b-markup').value = 87; }
     else if (name === "Brownies") { document.getElementById('b-yield').value = 12; document.getElementById('b-markup').value = 50; }
@@ -520,11 +458,11 @@ function handleBatchSelect() {
 }
 
 function addBatchIngRow(ingId = null, qty = null) {
-  const row = document.createElement('div'); row.className = 'form-row ing-usage-row'; row.style.alignItems = 'center'; row.style.marginBottom = '8px';
+  const row = document.createElement('div'); row.className = 'form-row ing-usage-row';
   let opts = ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}" ${i.id == ingId ? 'selected' : ''}>${i.name}</option>`).join('');
-  row.innerHTML = `<select class="form-input use-sel" style="flex:2; margin-bottom:0;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select>
-                   <input type="number" step="any" class="form-input use-qty" style="flex:1; margin-bottom:0;" value="${qty || ''}" placeholder="Qty" oninput="calculateBatch()">
-                   <button type="button" style="background:none; border:none; color:var(--rose); font-size:18px; cursor:pointer;" onclick="this.parentElement.remove(); calculateBatch();">×</button>`;
+  row.innerHTML = `<select class="form-input use-sel" style="flex:2;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select>
+                   <input type="number" step="any" class="form-input use-qty" style="flex:1;" value="${qty || ''}" oninput="calculateBatch()">
+                   <button type="button" onclick="this.parentElement.remove(); calculateBatch();">×</button>`;
   document.getElementById('batch-ing-rows').appendChild(row);
 }
 
@@ -536,22 +474,13 @@ function calculateBatch() {
   });
   
   const name = document.getElementById('b-name').value;
-  let labor, overhead, packaging;
-  if (["Cookies", "Cookies Premium", "Brownies", "Crinkles"].includes(name)) {
-    labor = ingTotal * 0.50; overhead = ingTotal * 0.20; packaging = 50;
-  } else {
-    labor = parseFloat(document.getElementById('b-labor').value) || 0;
-    overhead = parseFloat(document.getElementById('b-overhead').value) || 0;
-    packaging = parseFloat(document.getElementById('b-packaging').value) || 0;
-  }
-
+  let labor = ingTotal * 0.5, overhead = ingTotal * 0.2, packaging = 50;
   document.getElementById('b-labor').value = labor.toFixed(2);
   document.getElementById('b-overhead').value = overhead.toFixed(2);
   document.getElementById('b-packaging').value = packaging.toFixed(2);
 
   const sub = ingTotal + labor + overhead + packaging;
-  const cafe = sub * 0.10; 
-  const total = sub + cafe;
+  const cafe = sub * 0.1, total = sub + cafe;
   const mkpPct = parseFloat(document.getElementById('b-markup').value) || 0;
   const mkpVal = total * (mkpPct / 100);
   const yieldPcs = parseFloat(document.getElementById('b-yield').value) || 1;
@@ -573,7 +502,7 @@ async function handleSaveBatch(e) {
   const ings = [];
   document.querySelectorAll('.ing-usage-row').forEach(row => {
     const sel = row.querySelector('.use-sel'), q = parseFloat(row.querySelector('.use-qty').value);
-    if(sel.value && q) ings.push({ id: sel.value, name: ings.find ? "" : "ing", qty: q });
+    if(sel.value && q) ings.push({ id: sel.value, qty: q });
   });
 
   const data = {
@@ -583,8 +512,7 @@ async function handleSaveBatch(e) {
     total_cost: parseFloat(document.getElementById('sum-total').innerText.replace('₱','')),
     suggested_price: parseFloat(document.getElementById('sum-suggested').innerText.replace('₱','')),
     markup_percent: parseFloat(document.getElementById('b-markup').value), 
-    markup_value: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')), 
-    ingredients_used: ings
+    markup_value: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')), ingredients_used: ings
   };
 
   const { error } = id ? await _sb.from('batches').update(data).eq('id', id) : await _sb.from('batches').insert([data]);
@@ -598,39 +526,27 @@ function openBatchModal(id = null) {
   if (id) {
     const b = batches.find(x => x.id == id);
     document.getElementById('b-name').value = ["Cookies", "Cookies Premium", "Brownies", "Crinkles"].includes(b.name) ? b.name : "Others";
-    if (document.getElementById('b-name').value === "Others") { 
-        document.getElementById('b-name-manual').value = b.name; 
-        document.getElementById('b-name-manual').style.display = "block"; 
-    }
-    document.getElementById('b-destination').value = b.destination; 
-    document.getElementById('b-date').value = b.date;
-    document.getElementById('b-yield').value = b.yield_pcs; 
-    document.getElementById('b-markup').value = b.markup_percent;
+    document.getElementById('b-destination').value = b.destination; document.getElementById('b-date').value = b.date;
+    document.getElementById('b-yield').value = b.yield_pcs; document.getElementById('b-markup').value = b.markup_percent;
     if (b.ingredients_used) b.ingredients_used.forEach(ing => addBatchIngRow(ing.id, ing.qty));
     handleBatchSelect();
-  } else { 
-    document.getElementById('b-date').value = new Date().toISOString().split('T')[0]; 
-    addBatchIngRow(); 
-  }
+  } else { addBatchIngRow(); }
   openModal('modal-batch');
 }
 
 function renderBatches() {
-  const nf = document.getElementById('filter-name').value, df = document.getElementById('filter-dest').value;
-  const filtered = batches.filter(b => (!nf || b.name === nf) && (!df || b.destination === df));
-  document.getElementById('batch-list-container').innerHTML = filtered.map(b => `<div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
-        <div><h3>${b.name}</h3><div style="font-size:11px; color:var(--text-muted); font-weight:600;">${b.destination} | 📅 ${b.date}</div></div>
-        <button class="btn btn-sales-trigger" onclick="recordSalesPrompt(${b.id})">+ Record Sales</button>
+  document.getElementById('batch-list-container').innerHTML = batches.map(b => `<div class="card">
+      <div style="display:flex; justify-content:space-between;">
+        <h3>${b.name}</h3><button class="btn btn-sales-trigger" onclick="recordSalesPrompt(${b.id})">+ Sales</button>
       </div>
       <div class="batch-summary-grid">
-        <div><span class="summary-label">Labor</span>₱${(b.labor_cost || 0).toFixed(2)}</div>
-        <div><span class="summary-label">Overhead</span>₱${(b.overhead_cost || 0).toFixed(2)}</div>
-        <div><span class="summary-label">Pack</span>₱${(b.packaging_cost || 0).toFixed(2)}</div>
-        <div style="color:var(--rose);"><span class="summary-label">Markup</span>₱${(b.markup_value || 0).toFixed(2)}</div>
+        <div><span class="summary-label">Labor</span>₱${b.labor_cost.toFixed(2)}</div>
+        <div><span class="summary-label">Overhead</span>₱${b.overhead_cost.toFixed(2)}</div>
+        <div><span class="summary-label">Pack</span>₱${b.packaging_cost.toFixed(2)}</div>
+        <div style="color:var(--rose);"><span class="summary-label">Markup</span>₱${b.markup_value.toFixed(2)}</div>
       </div>
-      <div style="display:flex; justify-content:space-between; margin-top:12px; border-top:1px dashed var(--border); padding-top:12px; align-items:center;">
-        <div style="font-weight:700; color:var(--sage);">₱${(b.suggested_price || 0).toFixed(2)} / pc</div>
+      <div style="display:flex; justify-content:space-between; margin-top:10px; align-items:center;">
+        <div style="font-weight:700;">₱${b.suggested_price.toFixed(2)} / pc</div>
         <div><button class="action-btn" onclick="openBatchModal(${b.id})">Edit</button><button class="action-btn btn-del" onclick="deleteItem('batches', ${b.id})">Del</button></div>
       </div>
     </div>`).join('');
@@ -638,27 +554,21 @@ function renderBatches() {
 
 async function recordSalesPrompt(batchId) {
     const b = batches.find(x => x.id === batchId);
-    const qty = prompt(`How many ${b.name} sold?`, b.yield_pcs);
+    const qty = prompt(`Qty sold?`, b.yield_pcs);
     if (!qty) return;
-    const prc = prompt(`Selling Price?`, b.suggested_price);
-    if (!prc) return;
-    await _sb.from('sales').insert([{ 
-        batch_id: batchId, item_name: b.name, qty_sold: parseFloat(qty), 
-        unit_price: parseFloat(prc), total_revenue: parseFloat(qty) * parseFloat(prc) 
-    }]);
+    await _sb.from('sales').insert([{ batch_id: batchId, item_name: b.name, qty_sold: parseFloat(qty), unit_price: b.suggested_price, total_revenue: parseFloat(qty) * b.suggested_price }]);
     loadData();
 }
 
 function renderSales(sData) {
   document.getElementById('sales-table-body').innerHTML = sData.map(s => `<tr>
-    <td><b>${s.item_name}</b></td><td>${s.batches?.date || ''}</td><td>${s.batches?.destination || ''}</td>
+    <td>${s.item_name}</td><td>${s.batches?.date || ''}</td><td>${s.batches?.destination || ''}</td>
     <td>${s.qty_sold}</td><td>${(s.batches?.yield_pcs || 0) - s.qty_sold}</td>
     <td>₱${s.unit_price.toFixed(2)}</td><td>₱${s.total_revenue.toFixed(2)}</td>
     <td><button class="action-btn btn-del" onclick="deleteItem('sales', ${s.id})">Del</button></td></tr>`).join('');
 }
 
-async function deleteItem(tbl, id) { if(confirm("Confirm delete?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
-function clearFilters() { document.getElementById('filter-name').value = ""; document.getElementById('filter-dest').value = ""; renderBatches(); }
+async function deleteItem(tbl, id) { if(confirm("Delete?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
 function toggleIngredients() { const c = document.getElementById('ing-section-content'); c.style.display = c.style.display === 'none' ? 'block' : 'none'; }
 </script>
 </body>
