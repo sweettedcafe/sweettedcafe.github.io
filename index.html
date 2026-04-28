@@ -336,7 +336,7 @@
     </div>
     </div>
 
-    <footer>© 2026 Sweet Ted Cafe. All rights reserved.🐻 </footer>
+    <footer>© 2026 Sweet Ted Cafe. All rights reserved.🐻</footer>
 </div>
 
 <div id="modal-ing" class="modal-bg">
@@ -466,16 +466,13 @@ async function loadData() {
   const { data: i } = await _sb.from('ingredients').select('*').order('name');
   const { data: b } = await _sb.from('batches').select('*').order('created_at', {ascending: false});
   const { data: s } = await _sb.from('sales').select('*, batches(name, date, destination, yield_pcs, total_cost, labor_cost, overhead_cost, packaging_cost, cafe_percentage_cost)');
+  ingredients = i || []; batches = b || []; allSalesData = s || [];
+
+  updateDashboardFilterDropdown();
+  updateBatchFilterDropdown();
+  updateSalesItemDropdown();
   
-  ingredients = i || []; 
-  batches = b || []; 
-  allSalesData = s || [];
-
-  // These three lines ensure the UI updates with the database data
-  updateDashboardFilterDropdown(); 
-  updateSalesItemDropdown(); 
   refreshDashboard(); 
-
   renderInventory(); 
   renderBatches(); 
   renderSales(allSalesData);
@@ -484,15 +481,24 @@ async function loadData() {
 function updateDashboardFilterDropdown() {
     const dashDropdown = document.getElementById('dash-filter-item');
     if (!dashDropdown) return;
-
-    // Pull unique names from the batches array which is synced with Supabase
     const uniqueItems = [...new Set(batches.map(b => b.name))].sort();
-    
-    // Clear and rebuild the dropdown options
-    let optionsHtml = `<option value="">All Items</option>`;
-    optionsHtml += uniqueItems.map(name => `<option value="${name}">${name}</option>`).join('');
-    
+    let optionsHtml = `<option value="">All Items</option>` + uniqueItems.map(name => `<option value="${name}">${name}</option>`).join('');
     dashDropdown.innerHTML = optionsHtml;
+}
+
+function updateBatchFilterDropdown() {
+    const filterDropdown = document.getElementById('filter-name');
+    if (!filterDropdown) return;
+    const uniqueItems = [...new Set(batches.map(b => b.name))].sort();
+    let optionsHtml = `<option value="">All Items</option>` + uniqueItems.map(name => `<option value="${name}">${name}</option>`).join('');
+    filterDropdown.innerHTML = optionsHtml;
+}
+
+function updateSalesItemDropdown() {
+  const dropdown = document.getElementById('sales-filter-item');
+  if (!dropdown) return;
+  const uniqueItems = [...new Set(allSalesData.map(s => s.item_name))].sort();
+  dropdown.innerHTML = `<option value="">All Items</option>` + uniqueItems.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
 function refreshDashboard() {
@@ -525,7 +531,12 @@ function renderStats(sData, bData) {
 }
 
 function renderInsights(sData) {
-    if (sData.length === 0) return;
+    if (sData.length === 0) {
+        document.getElementById('best-seller').innerText = "No data";
+        document.getElementById('least-seller').innerText = "No data";
+        document.getElementById('dest-split').innerHTML = "";
+        return;
+    }
     const counts = {}, dests = {};
     sData.forEach(s => {
         counts[s.item_name] = (counts[s.item_name] || 0) + s.qty_sold;
@@ -560,7 +571,7 @@ function renderDashboardLists(bData) {
       <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
         <div><div style="font-weight:600;">${b.name}</div><div style="font-size:12px; color:var(--text-muted);">${b.date} | Yield: ${b.yield_pcs} pcs</div></div>
         <div style="font-weight:700;">₱${(b.total_cost || 0).toFixed(2)}</div>
-      </div>`).join('');
+      </div>`).join('') || '<p style="font-size:12px; color:var(--text-muted);">No batches found.</p>';
     document.getElementById('low-stock-list').innerHTML = ingredients.filter(i => i.stock <= (i.low_stock_threshold || 5)).map(i => `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
             <div style="font-weight:600;">${i.name}</div><div style="color:var(--rose); font-weight:700;">${i.stock} ${i.unit}</div>
@@ -714,7 +725,15 @@ async function openSalesModal(batchId) {
 
 function renderBatches() {
   const nf = document.getElementById('filter-name').value, df = document.getElementById('filter-dest').value;
-  const filtered = batches.filter(b => (!nf || b.name === nf) && (!df || b.destination === df));
+  const fromD = document.getElementById('filter-from').value, toD = document.getElementById('filter-to').value;
+  
+  const filtered = batches.filter(b => {
+    const matchName = !nf || b.name === nf;
+    const matchDest = !df || b.destination === df;
+    const matchDate = (!fromD || b.date >= fromD) && (!toD || b.date <= toD);
+    return matchName && matchDest && matchDate;
+  });
+
   document.getElementById('batch-list-container').innerHTML = filtered.map(b => `<div class="card">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap: 10px;">
         <div><h3>${b.name}</h3><div><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700; margin-right:5px;">${b.destination || 'Online'}</span><span style="font-size:11px; color:var(--text-muted); font-weight:600;">📅 ${b.date}</span></div></div>
@@ -735,18 +754,11 @@ function renderBatches() {
         <div style="color:var(--sage); font-weight:700;">Price/Pc: ₱${(b.suggested_price || 0).toFixed(2)}</div>
         <div><button class="action-btn" onclick="openBatchModal(${b.id})">Edit</button><button class="action-btn" onclick="openBatchModal(${b.id}, true)">Duplicate</button><button class="action-btn btn-del" onclick="deleteItem('batches',${b.id})">Delete</button></div>
       </div>
-    </div>`).join('');
+    </div>`).join('') || '<p style="text-align:center; color:var(--text-muted);">No matching batches found.</p>';
 }
 
 function renderInventory() {
   document.getElementById('ing-table-body').innerHTML = ingredients.map(i => `<tr><td>${i.name}</td><td>${i.category}</td><td>${i.unit}</td><td>₱${i.cpu.toFixed(2)}</td><td>${i.stock}</td><td>₱${(i.cpu*i.stock).toFixed(2)}</td><td><button class="action-btn" onclick="openIngModal(${i.id})">Edit</button> <button class="action-btn btn-del" onclick="deleteItem('ingredients',${i.id})">Del</button></td></tr>`).join('');
-}
-
-function updateSalesItemDropdown() {
-  const dropdown = document.getElementById('sales-filter-item');
-  if (!dropdown) return;
-  const uniqueItems = [...new Set(allSalesData.map(s => s.item_name))].sort();
-  dropdown.innerHTML = `<option value="">All Items</option>` + uniqueItems.map(n => `<option value="${n}">${n}</option>`).join('');
 }
 
 function renderSales(sData) {
@@ -754,7 +766,6 @@ function renderSales(sData) {
   if (body) {
     body.innerHTML = sData.map(s => `<tr><td><b>${s.item_name}</b></td><td>${s.batches?.date || 'N/A'}</td><td><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${s.batches?.destination || 'N/A'}</span></td><td>${s.qty_sold}</td><td style="font-weight:bold; color:var(--sage)">${(s.batches?.yield_pcs || 0) - s.qty_sold}</td><td>₱${s.unit_price.toFixed(2)}</td><td>₱${s.total_revenue.toFixed(2)}</td><td class="btn"><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td></tr>`).join('');
     
-    // Prepare Print Data & Insights
     const totalRev = sData.reduce((a,c) => a + c.total_revenue, 0);
     const counts = {};
     let tLabor = 0, tOver = 0, tPack = 0, tCafe = 0, tTotalCost = 0;
@@ -774,13 +785,11 @@ function renderSales(sData) {
     const best = sorted.length ? sorted[0] : ["None", 0];
     const least = sorted.length ? sorted[sorted.length-1] : ["None", 0];
 
-    // Update Print Insights Content
     document.getElementById('print-insights-content').innerHTML = `
       <div class="print-stat"><b>Top Selling Item:</b> ${best[0]} (${best[1]} pcs)</div>
       <div class="print-stat" style="margin-top:10px;"><b>Least Selling Item:</b> ${least[0]} (${least[1]} pcs)</div>
     `;
 
-    // Update Print Financial Content
     document.getElementById('print-financial-content').innerHTML = `
       <div style="font-size:12px;">
         <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Labor:</span><span>₱${tLabor.toFixed(2)}</span></div>
@@ -797,9 +806,38 @@ function renderSales(sData) {
 }
 
 async function deleteItem(tbl, id) { if(confirm("Delete?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
-function clearFilters() { renderBatches(); }
-function applySalesFilters() { renderSales(allSalesData); }
-function clearSalesFilters() { renderSales(allSalesData); }
+
+function clearFilters() { 
+  document.getElementById('filter-name').value = ""; 
+  document.getElementById('filter-dest').value = ""; 
+  document.getElementById('filter-from').value = ""; 
+  document.getElementById('filter-to').value = ""; 
+  renderBatches(); 
+}
+
+function applySalesFilters() {
+  const itemF = document.getElementById('sales-filter-item').value;
+  const destF = document.getElementById('sales-filter-dest').value;
+  const fromF = document.getElementById('sales-filter-from').value;
+  const toF = document.getElementById('sales-filter-to').value;
+
+  const filtered = allSalesData.filter(s => {
+    const matchItem = !itemF || s.item_name === itemF;
+    const matchDest = !destF || s.batches?.destination === destF;
+    const sDate = s.batches?.date || "";
+    const matchDate = (!fromF || sDate >= fromF) && (!toF || sDate <= toF);
+    return matchItem && matchDest && matchDate;
+  });
+  renderSales(filtered);
+}
+
+function clearSalesFilters() {
+  document.getElementById('sales-filter-item').value = "";
+  document.getElementById('sales-filter-dest').value = "";
+  document.getElementById('sales-filter-from').value = "";
+  document.getElementById('sales-filter-to').value = "";
+  renderSales(allSalesData);
+}
 </script>
 </body>
 </html>
