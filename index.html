@@ -29,27 +29,24 @@
   .nav-tab { padding: 8px 16px; border-radius: 8px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
   .nav-tab:hover { background: #f0f4f1; }
   .nav-tab.active { background: var(--brown-dark); color: white; }
-  
   .main { padding: 32px 24px; max-width: 1200px; margin: 0 auto; flex: 1; width: 100%; }
   .page { display: none; } 
   .page.active { display: block; }
-  
   .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
   .stat-card { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
   .stat-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; }
   .stat-val { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--brown-dark); }
-  
   .card { background: var(--warm-white); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); margin-bottom: 20px; }
   .card h3 { font-family: 'Playfair Display', serif; margin-bottom: 5px; font-size: 18px; }
-  
   .filter-bar { background: var(--warm-white); padding: 15px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 20px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 15px; }
-  
   table { width: 100%; border-collapse: collapse; }
   th { text-align: left; padding: 12px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); background: #fafcfa; }
   td { padding: 14px 12px; border-bottom: 1px solid #f0f0f0; }
   
+  /* Footer Styling */
   footer { background: var(--warm-white); border-top: 1px solid var(--border); padding: 20px; text-align: center; color: var(--text-muted); font-size: 12px; margin-top: auto; }
   
+  /* Insights Styling */
   .insight-pill { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; margin-top: 8px; }
   .pill-best { background: var(--sage-bg); color: var(--sage); }
   .pill-least { background: var(--rose-bg); color: var(--rose); }
@@ -57,29 +54,23 @@
   .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(3px); }
   .modal-bg.open { display: flex; }
   .modal { background: var(--warm-white); border-radius: var(--radius); padding: 32px; width: 650px; max-height: 90vh; overflow-y: auto; }
-  
   .form-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 5px; }
   .form-input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; margin-bottom: 15px; }
   .form-row { display: flex; gap: 15px; }
   .form-group { flex: 1; }
-  
   .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
   .btn-primary { background: var(--brown-mid); color: white; }
   .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
   .btn-save { background: #4a6d55; color: white; width: 100%; justify-content: center; }
   .btn-sales-trigger { background: #fdf2f0; color: #d4856a; border: none; font-size: 12px; padding: 5px 12px; }
-  
   .summary-box { background: #f9fbf9; border-radius: 10px; padding: 20px; border: 1px solid #edf2ed; margin-top: 15px; }
   .summary-item { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; }
   .summary-total { border-top: 1px solid #ddd; margin-top: 10px; padding-top: 10px; font-weight: 700; font-size: 16px; }
-  
   .action-btn { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; background: white; font-size: 12px; margin-right: 4px; }
   .btn-del { color: #d4856a; }
-
   .ing-header { display: flex; justify-content: space-between; align-items: center; background: #f1f7f2; padding: 8px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; }
   .ing-content { transition: max-height 0.3s ease-out; overflow: hidden; }
   .ing-content.minimized { max-height: 0; margin-bottom: 0; }
-  
   .batch-summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 12px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; }
   .summary-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-bottom: 2px; }
 </style>
@@ -104,10 +95,10 @@
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
       <h1 style="font-family:'Playfair Display'; font-size:28px;">Good morning! 🐻</h1>
       <div style="display:flex; gap:10px;">
-        <select id="dash-filter-item" class="form-input" style="margin-bottom:0; width:180px;" onchange="refreshDashboard()">
+        <select id="dash-filter-item" class="form-input" style="margin-bottom:0; width:150px;" onchange="refreshDashboard()">
           <option value="">All Items</option>
         </select>
-        <select id="dash-filter-dest" class="form-input" style="margin-bottom:0; width:160px;" onchange="refreshDashboard()">
+        <select id="dash-filter-dest" class="form-input" style="margin-bottom:0; width:150px;" onchange="refreshDashboard()">
           <option value="">All Destinations</option>
           <option value="Online Orders">Online Orders</option>
           <option value="Bevi & Go">Bevi & Go</option>
@@ -128,7 +119,7 @@
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
           <h3>Sales Performance</h3>
-          <select id="chart-period" class="form-input" style="width:120px; margin:0;" onchange="refreshDashboard()">
+          <select id="chart-period" class="form-input" style="width:120px; margin:0;" onchange="renderSalesChart()">
             <option value="day">Today</option>
             <option value="week">This Week</option>
             <option value="month" selected>This Month</option>
@@ -141,8 +132,10 @@
         <h3>Marketing Insights</h3>
         <p class="stat-label" style="margin-top:15px;">Top Selling Item</p>
         <div id="best-seller" class="insight-pill pill-best">Calculating...</div>
+        
         <p class="stat-label" style="margin-top:20px;">Least Selling Item</p>
         <div id="least-seller" class="insight-pill pill-least">Calculating...</div>
+
         <div style="margin-top:25px; padding-top:15px; border-top:1px solid var(--border);">
             <p class="stat-label">Destination Split</p>
             <div id="dest-split" style="font-size:12px; color:var(--text-muted); line-height:2;"></div>
@@ -203,6 +196,32 @@
 
   <div class="page" id="page-sales">
     <h2 style="font-family:'Playfair Display'; font-size:24px; margin-bottom:24px;">Sales Tracking</h2>
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label class="form-label">Item</label>
+        <select id="sales-filter-item" class="form-input" style="margin-bottom:0; width:160px;" onchange="applySalesFilters()">
+          <option value="">All Items</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="form-label">Destination</label>
+        <select id="sales-filter-dest" class="form-input" style="margin-bottom:0; width:160px;" onchange="applySalesFilters()">
+          <option value="">All Destinations</option>
+          <option value="Online Orders">Online Orders</option>
+          <option value="Bevi & Go">Bevi & Go</option>
+          <option value="Personal Consumption">Personal Consumption</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="form-label">From</label>
+        <input type="date" id="sales-filter-from" class="form-input" style="margin-bottom:0; width:140px;" onchange="applySalesFilters()">
+      </div>
+      <div class="filter-group">
+        <label class="form-label">To</label>
+        <input type="date" id="sales-filter-to" class="form-input" style="margin-bottom:0; width:140px;" onchange="applySalesFilters()">
+      </div>
+      <button class="btn btn-ghost" style="height:38px;" onclick="clearSalesFilters()">Clear Filters</button>
+    </div>
     <div class="card" style="padding:0; overflow:hidden;">
       <table>
         <thead><tr><th>Item</th><th>Batch Date</th><th>Destination</th><th>Qty</th><th>Remaining</th><th>Price</th><th>Total</th><th>Actions</th></tr></thead>
@@ -212,7 +231,9 @@
   </div>
 </div>
 
-<footer>© 2026 Sweet Ted Cafe. All rights reserved. | 🐻 Handcrafted Analytics</footer>
+<footer>
+    © 2026 Sweet Ted Cafe. All rights reserved. | 🐻 Handcrafted Analytics
+</footer>
 
 <div id="modal-ing" class="modal-bg">
     <div class="modal" style="width: 550px;">
@@ -240,7 +261,7 @@
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">CURRENT STOCK QTY</label><input type="number" step="any" id="i-stock" class="form-input" required></div>
-          <div class="form-group"><label class="form-label">LOW STOCK ALERT AT</label><input type="number" step="any" id="i-alert" class="form-input" value="5"></div>
+          <div class="form-group"><label class="form-label">LOW STOCK ALERT AT</label><input type="number" step="any" id="i-alert" class="form-input"></div>
         </div>
         <div style="display:flex; gap:10px; margin-top:20px; justify-content: flex-end;">
           <button type="button" class="btn btn-ghost" onclick="closeModal('modal-ing')">Cancel</button>
@@ -276,28 +297,35 @@
           <div class="form-group"><label class="form-label">DATE</label><input type="date" id="b-date" class="form-input" required></div>
           <div class="form-group"><label class="form-label">YIELD (PCS)</label><input type="number" id="b-yield" class="form-input" oninput="calculateBatch()" required></div>
         </div>
-        
         <div class="ing-header" onclick="toggleIngredients()">
           <label class="form-label" style="margin-bottom:0; cursor:pointer;">INGREDIENTS USED</label><span id="ing-toggle-icon">▼</span>
         </div>
-        <div id="ing-section-content" class="ing-contentMinimized">
+        <div id="ing-section-content" class="ing-content">
           <div id="batch-ing-rows"></div>
           <button type="button" class="btn btn-ghost" style="padding:6px 12px; font-size:12px; margin-bottom:15px;" onclick="addBatchIngRow()">+ Add Ingredient</button>
         </div>
-
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">LABOR (₱)</label><input type="number" step="0.01" id="b-labor" class="form-input" oninput="calculateBatch()"></div>
-          <div class="form-group"><label class="form-label">OVERHEAD (₱)</label><input type="number" step="0.01" id="b-overhead" class="form-input" oninput="calculateBatch()"></div>
-          <div class="form-group"><label class="form-label">PACKAGING</label><input type="number" step="0.01" id="b-packaging" class="form-input" oninput="calculateBatch()"></div>
+        
+        <div class="form-row" id="manual-pct-row" style="display:none; margin-bottom: 10px;">
+          <div class="form-group"><label class="form-label">LABOR % (OF ING. COST)</label><input type="number" id="b-labor-pct" class="form-input" placeholder="e.g. 50" oninput="calculateBatch()"></div>
+          <div class="form-group"><label class="form-label">OVERHEAD % (OF ING. COST)</label><input type="number" id="b-overhead-pct" class="form-input" placeholder="e.g. 20" oninput="calculateBatch()"></div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">MARKUP %</label><input type="number" id="b-markup" class="form-input" value="40" oninput="calculateBatch()"></div>
+  
+        <div class="form-row" style="margin-top:5px;">
+          <div class="form-group"><label class="form-label">LABOR (₱)</label><input type="number" step="0.01" id="b-labor" class="form-input" oninput="calculateBatch()" readonly></div>
+          <div class="form-group"><label class="form-label">OVERHEAD (₱)</label><input type="number" step="0.01" id="b-overhead" class="form-input" oninput="calculateBatch()" readonly></div>
+          <div class="form-group"><label class="form-label">PACKAGING</label><input type="number" step="0.01" id="b-packaging" class="form-input" oninput="calculateBatch()" readonly></div>
         </div>
+        <div class="form-row"><div class="form-group"><label class="form-label">MARKUP %</label><input type="number" id="b-markup" class="form-input" value="40" oninput="calculateBatch()" readonly></div></div>
+        
         <div class="summary-box">
-          <div class="summary-item"><span>Ingredients Cost</span><span id="sum-ing">₱0.00</span></div>
-          <div class="summary-item"><span>Operating Costs</span><span id="sum-op">₱0.00</span></div>
-          <div class="summary-total"><span>Total Cost (incl Cafe 10%)</span><span id="sum-total">₱0.00</span></div>
-          <div class="summary-item" style="color:var(--sage); font-weight:700;"><span>Suggested Price/Pc</span><span id="sum-suggested">₱0.00</span></div>
+          <div class="summary-item"><span>Ingredient cost</span><span id="sum-ing">₱0.00</span></div>
+          <div class="summary-item"><span>Labor</span><span id="sum-labor">₱0.00</span></div>
+          <div class="summary-item"><span>Overhead</span><span id="sum-overhead">₱0.00</span></div>
+          <div class="summary-item"><span>Packaging</span><span id="sum-packaging">₱0.00</span></div>
+          <div class="summary-item"><span>Cafe Percentage (10%)</span><span id="sum-cafe">₱0.00</span></div>
+          <div class="summary-item" style="border-top: 1px dashed #ccc; padding-top: 5px; color: var(--rose); font-weight: 600;"><span>Markup Total (₱)</span><span id="sum-markup-val">₱0.00</span></div>
+          <div class="summary-total"><span>Total Batch Cost</span><span id="sum-total">₱0.00</span></div>
+          <div class="summary-item" style="color:var(--sage); font-weight:700;"><span>Suggested price / pc</span><span id="sum-suggested">₱0.00</span></div>
         </div>
         <div style="display:flex; gap:10px; margin-top:20px;"><button type="button" class="btn btn-ghost" onclick="closeModal('modal-batch')">Cancel</button><button type="submit" class="btn btn-save">Save Batch</button></div>
       </form>
@@ -313,34 +341,22 @@ let ingredients = [], batches = [], allSalesData = [], salesChart = null;
 
 async function loadData() {
   const { data: i } = await _sb.from('ingredients').select('*').order('name');
-  const { data: b } = await _sb.from('batches').select('*').order('date', {ascending: false});
-  const { data: s } = await _sb.from('sales').select('*, batches(*)');
+  const { data: b } = await _sb.from('batches').select('*').order('created_at', {ascending: false});
+  const { data: s } = await _sb.from('sales').select('*, batches(name, date, destination, yield_pcs)');
   
   ingredients = i || []; 
   batches = b || [];
   allSalesData = s || [];
   
-  updateFilterDropdowns();
   refreshDashboard();
   renderInventory(); 
   renderBatches(); 
   renderSales(allSalesData);
+  updateSalesItemDropdown();
+  updateDashboardFilterDropdown();
 }
 
-function updateFilterDropdowns() {
-    const dashDropdown = document.getElementById('dash-filter-item');
-    const batchDropdown = document.getElementById('filter-name');
-    
-    // Get unique names from current batch database
-    const uniqueItems = [...new Set(batches.map(b => b.name))].sort();
-    
-    const optionsHtml = `<option value="">All Items</option>` + 
-        uniqueItems.map(name => `<option value="${name}">${name}</option>`).join('');
-        
-    dashDropdown.innerHTML = optionsHtml;
-    batchDropdown.innerHTML = optionsHtml;
-}
-
+// DASHBOARD SPECIFIC LOGIC
 function refreshDashboard() {
   const itemF = document.getElementById('dash-filter-item').value;
   const destF = document.getElementById('dash-filter-dest').value;
@@ -366,62 +382,103 @@ function refreshDashboard() {
 function renderStats(sData, bData) {
   document.getElementById('d-ing').innerText = ingredients.length;
   document.getElementById('d-batch').innerText = bData.length;
-  const rev = sData.reduce((a, c) => a + (c.total_revenue || 0), 0);
+  const rev = sData.reduce((a, c) => a + c.total_revenue, 0);
   const cost = bData.reduce((a, c) => a + (c.total_cost || 0), 0);
   document.getElementById('d-rev').innerText = "₱" + rev.toFixed(2);
   document.getElementById('d-profit').innerText = "₱" + (rev - cost).toFixed(2);
 }
 
-function renderSalesChart(sData) {
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    if (salesChart) salesChart.destroy();
-
-    const dataMap = {};
-    sData.forEach(s => {
-        const d = s.batches?.date || new Date(s.created_at).toISOString().split('T')[0];
-        dataMap[d] = (dataMap[d] || 0) + (s.total_revenue || 0);
-    });
-
-    salesChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: Object.keys(dataMap),
-            datasets: [{ label: 'Revenue', data: Object.values(dataMap), borderColor: '#4a6d55', tension: 0.4, fill: true, backgroundColor: 'rgba(74,109,85,0.1)' }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-    });
-}
-
 function renderInsights(sData) {
-    if (!sData.length) return;
+    if (sData.length === 0) {
+        document.getElementById('best-seller').innerText = "N/A";
+        document.getElementById('least-seller').innerText = "N/A";
+        document.getElementById('dest-split').innerHTML = "No data";
+        return;
+    }
+
     const counts = {}, dests = {};
     sData.forEach(s => {
         counts[s.item_name] = (counts[s.item_name] || 0) + s.qty_sold;
         const d = s.batches?.destination || 'Unset';
-        dests[d] = (dests[d] || 0) + (s.total_revenue || 0);
+        dests[d] = (dests[d] || 0) + s.total_revenue;
     });
+
     const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
     document.getElementById('best-seller').innerText = sorted[0][0] + ` (${sorted[0][1]} sold)`;
     document.getElementById('least-seller').innerText = sorted[sorted.length-1][0] + ` (${sorted[sorted.length-1][1]} sold)`;
-    
+
     let destHtml = "";
-    Object.entries(dests).forEach(([k, v]) => destHtml += `<div><b>${k}:</b> ₱${v.toFixed(2)}</div>`);
+    Object.entries(dests).forEach(([k, v]) => {
+        destHtml += `<div><b>${k}:</b> ₱${v.toFixed(2)}</div>`;
+    });
     document.getElementById('dest-split').innerHTML = destHtml;
+}
+
+function renderSalesChart(sData = allSalesData) {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const period = document.getElementById('chart-period').value;
+    
+    if (salesChart) salesChart.destroy();
+
+    const dataMap = {};
+    sData.forEach(s => {
+        const date = new Date(s.batches?.date || s.created_at);
+        let key = date.toLocaleDateString();
+        if (period === 'month') key = date.toLocaleString('default', { month: 'short', day: 'numeric' });
+        if (period === 'year') key = date.toLocaleString('default', { month: 'short' });
+        dataMap[key] = (dataMap[key] || 0) + s.total_revenue;
+    });
+
+    const labels = Object.keys(dataMap);
+    const values = Object.values(dataMap);
+
+    salesChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue',
+                data: values,
+                borderColor: '#4a6d55',
+                backgroundColor: 'rgba(74, 109, 85, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } }
+        }
+    });
 }
 
 function renderDashboardLists(bData) {
     document.getElementById('recent-batch-list').innerHTML = bData.slice(0, 5).map(b => `
-      <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
-        <span><b>${b.name}</b><br><small>${b.date}</small></span>
-        <span>₱${(b.total_cost || 0).toFixed(2)}</span>
-      </div>`).join('');
-    
-    document.getElementById('low-stock-list').innerHTML = ingredients.filter(i => i.stock <= (i.low_stock_threshold || 5)).map(i => `
-      <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
-        <span>${i.name}</span><span style="color:var(--rose); font-weight:700;">${i.stock} ${i.unit}</span>
-      </div>`).join('') || 'Stock healthy!';
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
+        <div>
+            <div style="font-weight:600;">${b.name}</div>
+            <div style="font-size:12px; color:var(--text-muted);">${b.date || ''} | Yield: ${b.yield_pcs} pcs</div>
+        </div>
+        <div style="font-weight:700;">₱${(b.total_cost || 0).toFixed(2)}</div>
+      </div>`).join('') || '<p>No batches found.</p>';
+
+    document.getElementById('low-stock-list').innerHTML = ingredients
+        .filter(i => i.stock <= (i.low_stock_threshold || 5))
+        .map(i => `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #f0f0f0;">
+            <div style="font-weight:600;">${i.name}</div>
+            <div style="color:var(--rose); font-weight:700;">${i.stock} ${i.unit}</div>
+        </div>`).join('') || '<p style="color:var(--sage);">Stock levels healthy!</p>';
 }
 
+function updateDashboardFilterDropdown() {
+    const dropdown = document.getElementById('dash-filter-item');
+    const uniqueItems = [...new Set(batches.map(b => b.name))];
+    dropdown.innerHTML = `<option value="">All Items</option>` + uniqueItems.map(n => `<option value="${n}">${n}</option>`).join('');
+}
+
+// SHARED LOGIC (Unchanged from previous versions but kept for completeness)
 function showPage(p) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
@@ -432,171 +489,269 @@ function showPage(p) {
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
-function renderInventory() {
-  document.getElementById('ing-table-body').innerHTML = ingredients.map(i => `<tr><td>${i.name}</td><td>${i.category}</td><td>${i.unit}</td><td>₱${i.cpu.toFixed(2)}</td><td>${i.stock}</td><td>₱${(i.cpu*i.stock).toFixed(2)}</td><td><button class="action-btn" onclick="openIngModal(${i.id})">Edit</button></td></tr>`).join('');
+function openIngModal(id = null) {
+  const form = document.querySelector('#modal-ing form'); form.reset();
+  if (id) {
+    const ing = ingredients.find(x => x.id == id);
+    document.getElementById('ing-id').value = ing.id;
+    document.getElementById('modal-ing-title').innerText = "Edit Ingredient";
+    document.getElementById('i-name').value = ing.name;
+    document.getElementById('i-category').value = ing.category;
+    document.getElementById('i-unit').value = ing.unit;
+    document.getElementById('i-stock').value = ing.stock;
+    document.getElementById('i-cost-bulk').value = ing.cpu;
+    document.getElementById('i-qty-bulk').value = 1;
+  } else {
+    document.getElementById('ing-id').value = "";
+    document.getElementById('modal-ing-title').innerText = "Add Ingredient";
+  }
+  openModal('modal-ing');
+}
+
+async function handleSaveIngredient(event) {
+  event.preventDefault();
+  const id = document.getElementById('ing-id').value;
+  const cpu = (parseFloat(document.getElementById('i-cost-bulk').value) || 0) / (parseFloat(document.getElementById('i-qty-bulk').value) || 1);
+  const data = {
+    name: document.getElementById('i-name').value, category: document.getElementById('i-category').value,
+    unit: document.getElementById('i-unit').value, cpu: cpu, stock: parseFloat(document.getElementById('i-stock').value), 
+    low_stock_threshold: parseFloat(document.getElementById('i-alert').value) || 0
+  };
+  let { error } = id ? await _sb.from('ingredients').update(data).eq('id', id) : await _sb.from('ingredients').insert([data]);
+  if (error) alert(error.message); else { closeModal('modal-ing'); loadData(); }
+}
+
+function toggleIngredients() {
+  const content = document.getElementById('ing-section-content');
+  const icon = document.getElementById('ing-toggle-icon');
+  content.classList.toggle('minimized');
+  icon.innerText = content.classList.contains('minimized') ? '▶' : '▼';
+}
+
+function handleBatchSelect() {
+  const name = document.getElementById('b-name').value;
+  const manualName = document.getElementById('b-name-manual');
+  const manualPctRow = document.getElementById('manual-pct-row');
+  const inputs = ['b-yield', 'b-labor', 'b-overhead', 'b-packaging', 'b-markup'];
+
+  if (name === "Others") {
+    manualName.style.display = "block";
+    manualPctRow.style.display = "flex";
+    inputs.forEach(id => document.getElementById(id).readOnly = false);
+  } else {
+    manualName.style.display = "none"; manualPctRow.style.display = "none";
+    inputs.forEach(id => document.getElementById(id).readOnly = true);
+    if (name === "Cookies") { document.getElementById('b-yield').value = 15; document.getElementById('b-markup').value = 94; }
+    else if (name === "Cookies Premium") { document.getElementById('b-yield').value = 15; document.getElementById('b-markup').value = 87; }
+    else if (name === "Brownies") { document.getElementById('b-yield').value = 12; document.getElementById('b-markup').value = 50; }
+    else if (name === "Crinkles") { document.getElementById('b-yield').value = 10; document.getElementById('b-markup').value = 53; }
+  }
+  calculateBatch();
+}
+
+function addBatchIngRow(ingId = null, qty = null) {
+  const row = document.createElement('div'); row.className = 'form-row ing-usage-row'; row.style.alignItems = 'center'; row.style.gap = '8px';
+  let opts = ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}" ${i.id == ingId ? 'selected' : ''}>${i.name}</option>`).join('');
+  row.innerHTML = `<select class="form-input use-sel" style="flex:2; margin-bottom:0;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select>
+    <input type="number" step="any" class="form-input use-qty" style="flex:1; margin-bottom:0;" value="${qty || ''}" oninput="calculateBatch()">
+    <button type="button" style="background:none; border:none; cursor:pointer; font-size:18px; color:var(--rose);" onclick="this.parentElement.remove(); calculateBatch();">×</button>`;
+  document.getElementById('batch-ing-rows').appendChild(row);
+}
+
+function calculateBatch() {
+  const nameSel = document.getElementById('b-name').value;
+  let ingTotal = 0;
+  document.querySelectorAll('.ing-usage-row').forEach(row => {
+    const sel = row.querySelector('.use-sel');
+    ingTotal += (sel.options[sel.selectedIndex]?.dataset.cpu || 0) * (parseFloat(row.querySelector('.use-qty').value) || 0);
+  });
+  
+  let labor, overhead, packaging;
+  if (["Cookies", "Cookies Premium", "Brownies", "Crinkles"].includes(nameSel)) {
+    labor = ingTotal * 0.50; overhead = ingTotal * 0.20; packaging = 50;
+    document.getElementById('b-labor').value = labor.toFixed(2);
+    document.getElementById('b-overhead').value = overhead.toFixed(2);
+    document.getElementById('b-packaging').value = packaging.toFixed(2);
+  } else {
+    const lPct = parseFloat(document.getElementById('b-labor-pct').value) || 0;
+    const oPct = parseFloat(document.getElementById('b-overhead-pct').value) || 0;
+    labor = lPct > 0 ? ingTotal * (lPct / 100) : (parseFloat(document.getElementById('b-labor').value) || 0);
+    overhead = oPct > 0 ? ingTotal * (oPct / 100) : (parseFloat(document.getElementById('b-overhead').value) || 0);
+    packaging = parseFloat(document.getElementById('b-packaging').value) || 0;
+    document.getElementById('b-labor').value = labor.toFixed(2);
+    document.getElementById('b-overhead').value = overhead.toFixed(2);
+  }
+
+  const sub = ingTotal + labor + overhead + packaging;
+  const cafe = sub * 0.10;
+  const total = sub + cafe;
+  const mkpV = total * ((parseFloat(document.getElementById('b-markup').value) || 0) / 100);
+
+  document.getElementById('sum-ing').innerText = "₱" + ingTotal.toFixed(2);
+  document.getElementById('sum-labor').innerText = "₱" + labor.toFixed(2);
+  document.getElementById('sum-overhead').innerText = "₱" + overhead.toFixed(2);
+  document.getElementById('sum-packaging').innerText = "₱" + packaging.toFixed(2);
+  document.getElementById('sum-cafe').innerText = "₱" + cafe.toFixed(2);
+  document.getElementById('sum-markup-val').innerText = "₱" + mkpV.toFixed(2);
+  document.getElementById('sum-total').innerText = "₱" + total.toFixed(2);
+  document.getElementById('sum-suggested').innerText = "₱" + ((total + mkpV) / (parseFloat(document.getElementById('b-yield').value) || 1)).toFixed(2);
+}
+
+async function handleSaveBatch(event) {
+  event.preventDefault();
+  const id = document.getElementById('batch-id').value, nameSel = document.getElementById('b-name').value;
+  const finalName = nameSel === "Others" ? document.getElementById('b-name-manual').value : nameSel;
+  const ingredientsUsed = [];
+  document.querySelectorAll('.ing-usage-row').forEach(row => {
+    const sel = row.querySelector('.use-sel'), q = parseFloat(row.querySelector('.use-qty').value);
+    if(sel.value && q > 0) ingredientsUsed.push({ id: sel.value, name: ingredients.find(i => i.id == sel.value).name, qty: q });
+  });
+  const data = {
+    name: finalName, destination: document.getElementById('b-destination').value, date: document.getElementById('b-date').value,
+    yield_pcs: parseFloat(document.getElementById('b-yield').value), labor_cost: parseFloat(document.getElementById('b-labor').value) || 0,
+    overhead_cost: parseFloat(document.getElementById('b-overhead').value) || 0, packaging_cost: parseFloat(document.getElementById('b-packaging').value) || 0,
+    cafe_percentage_cost: parseFloat(document.getElementById('sum-cafe').innerText.replace('₱','')),
+    total_cost: parseFloat(document.getElementById('sum-total').innerText.replace('₱','')),
+    suggested_price: parseFloat(document.getElementById('sum-suggested').innerText.replace('₱','')),
+    markup_percent: parseFloat(document.getElementById('b-markup').value) || 0,
+    markup_value: parseFloat(document.getElementById('sum-markup-val').innerText.replace('₱','')),
+    ingredients_used: ingredientsUsed
+  };
+  let { error } = id ? await _sb.from('batches').update(data).eq('id', id) : await _sb.from('batches').insert([data]);
+  if (error) alert(error.message); else { closeModal('modal-batch'); loadData(); }
+}
+
+function openBatchModal(id = null, duplicate = false) {
+  const form = document.querySelector('#modal-batch form'); form.reset();
+  document.getElementById('batch-ing-rows').innerHTML = "";
+  if (id) {
+    const b = batches.find(x => x.id == id);
+    document.getElementById('batch-id').value = duplicate ? "" : b.id;
+    document.getElementById('b-name').value = ["Cookies", "Cookies Premium", "Brownies", "Crinkles"].includes(b.name) ? b.name : "Others";
+    if (document.getElementById('b-name').value === "Others") {
+      document.getElementById('b-name-manual').value = b.name;
+      document.getElementById('b-name-manual').style.display = "block";
+    }
+    document.getElementById('b-destination').value = b.destination; document.getElementById('b-date').value = b.date;
+    document.getElementById('b-yield').value = b.yield_pcs; document.getElementById('b-labor').value = b.labor_cost;
+    document.getElementById('b-overhead').value = b.overhead_cost; document.getElementById('b-packaging').value = b.packaging_cost;
+    document.getElementById('b-markup').value = b.markup_percent;
+    if (b.ingredients_used) b.ingredients_used.forEach(ing => addBatchIngRow(ing.id, ing.qty));
+    handleBatchSelect();
+  } else {
+    document.getElementById('batch-id').value = ""; document.getElementById('b-date').value = new Date().toISOString().split('T')[0];
+    addBatchIngRow(); handleBatchSelect();
+  }
+  openModal('modal-batch');
+}
+
+async function openSalesModal(batchId) {
+  const b = batches.find(x => x.id === batchId);
+  const qty = prompt(`Pieces sold for ${b.name}?`, b.yield_pcs); if (!qty) return;
+  const prc = prompt(`Price per unit?`, b.suggested_price); if (!prc) return;
+  const { error } = await _sb.from('sales').insert([{ batch_id: batchId, item_name: b.name, qty_sold: parseFloat(qty), unit_price: parseFloat(prc), total_revenue: parseFloat(qty) * parseFloat(prc) }]);
+  if (error) alert(error.message); else loadData();
 }
 
 function renderBatches() {
   const from = document.getElementById('filter-from').value, to = document.getElementById('filter-to').value;
   const nf = document.getElementById('filter-name').value, df = document.getElementById('filter-dest').value;
   const filtered = batches.filter(b => (!from || b.date >= from) && (!to || b.date <= to) && (!nf || b.name === nf) && (!df || b.destination === df));
+  
+  const filterDropdown = document.getElementById('filter-name');
+  const uniqueNames = [...new Set(batches.map(b => b.name))];
+  const currentFilter = filterDropdown.value;
+  filterDropdown.innerHTML = `<option value="">All Items</option>` + uniqueNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  filterDropdown.value = currentFilter;
 
-  document.getElementById('batch-list-container').innerHTML = filtered.map(b => `
-    <div class="card">
-      <div style="display:flex; justify-content:space-between;">
-        <h3>${b.name}</h3>
-        <button class="btn btn-sales-trigger" onclick="openSalesModal(${b.id})">+ Record Sales</button>
+  document.getElementById('batch-list-container').innerHTML = filtered.map(b => {
+    const mkpV = b.markup_value || (b.total_cost * ((b.markup_percent || 0) / 100));
+    return `<div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div><h3>${b.name}</h3><div><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700; margin-right:5px;">${b.destination || 'Online'}</span><span style="font-size:11px; color:var(--text-muted); font-weight:600;">📅 ${b.date || 'No Date'}</span></div></div>
+        <div><button class="btn btn-sales-trigger" onclick="openSalesModal(${b.id})">+ Record Sales</button></div>
       </div>
-      <p style="font-size:12px; color:var(--text-muted);">${b.date} | ${b.destination} | Yield: ${b.yield_pcs}</p>
       <div class="batch-summary-grid">
-        <div><span class="summary-label">Total Cost</span>₱${(b.total_cost || 0).toFixed(2)}</div>
-        <div style="color:var(--sage); font-weight:700;"><span class="summary-label">Sug. Price/Pc</span>₱${(b.suggested_price || 0).toFixed(2)}</div>
+        <div><span class="summary-label">Labor</span>₱${(b.labor_cost || 0).toFixed(2)}</div>
+        <div><span class="summary-label">Overhead</span>₱${(b.overhead_cost || 0).toFixed(2)}</div>
+        <div><span class="summary-label">Packaging</span>₱${(b.packaging_cost || 0).toFixed(2)}</div>
+        <div><span class="summary-label">Cafe (10%)</span>₱${(b.cafe_percentage_cost || 0).toFixed(2)}</div>
       </div>
-    </div>`).join('');
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); margin-top:12px; border-top: 1px dashed var(--border); padding-top:15px; font-size:13px;">
+        <div>Yield: <b>${b.yield_pcs} pcs</b></div>
+        <div style="color:var(--rose);">Markup Total: <b>₱${mkpV.toFixed(2)}</b></div>
+        <div>Total Batch Cost: <b>₱${(b.total_cost || 0).toFixed(2)}</b></div>
+      </div>
+      <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="color:var(--sage); font-weight:700;">Price/Pc: ₱${(b.suggested_price || 0).toFixed(2)}</div>
+        <div><button class="action-btn" onclick="openBatchModal(${b.id})">Edit</button><button class="action-btn" onclick="openBatchModal(${b.id}, true)">Duplicate</button><button class="action-btn btn-del" onclick="deleteItem('batches',${b.id})">Delete</button></div>
+      </div>
+    </div>`;
+  }).join('') || '<div class="card" style="text-align:center; color:var(--text-muted);">No batches found.</div>';
+}
+
+function renderInventory() {
+  document.getElementById('ing-table-body').innerHTML = ingredients.map(i => `<tr><td>${i.name}</td><td>${i.category}</td><td>${i.unit}</td><td>₱${i.cpu.toFixed(2)}</td><td>${i.stock}</td><td>₱${(i.cpu*i.stock).toFixed(2)}</td><td><button class="action-btn" onclick="openIngModal(${i.id})">Edit</button> <button class="action-btn btn-del" onclick="deleteItem('ingredients',${i.id})">Del</button></td></tr>`).join('');
+}
+
+function updateSalesItemDropdown() {
+  const dropdown = document.getElementById('sales-filter-item');
+  const uniqueItems = [...new Set(allSalesData.map(s => s.item_name))];
+  const current = dropdown.value;
+  dropdown.innerHTML = `<option value="">All Items</option>` + uniqueNames.map(n => `<option value="${n}">${n}</option>`).join('');
+  dropdown.value = current;
+}
+
+function applySalesFilters() {
+  const item = document.getElementById('sales-filter-item').value;
+  const dest = document.getElementById('sales-filter-dest').value;
+  const from = document.getElementById('sales-filter-from').value;
+  const to = document.getElementById('sales-filter-to').value;
+
+  const filtered = allSalesData.filter(s => {
+    const bDate = s.batches?.date || '';
+    const bDest = s.batches?.destination || '';
+    return (!item || s.item_name === item) &&
+           (!dest || bDest === dest) &&
+           (!from || bDate >= from) &&
+           (!to || bDate <= to);
+  });
+
+  renderSales(filtered);
+}
+
+function clearSalesFilters() {
+  document.getElementById('sales-filter-item').value = "";
+  document.getElementById('sales-filter-dest').value = "";
+  document.getElementById('sales-filter-from').value = "";
+  document.getElementById('sales-filter-to').value = "";
+  renderSales(allSalesData);
 }
 
 function renderSales(sData) {
-    document.getElementById('sales-table-body').innerHTML = sData.map(s => `<tr>
+  const body = document.getElementById('sales-table-body');
+  if (body) {
+    body.innerHTML = sData.map(s => {
+      const yieldAmt = s.batches?.yield_pcs || 0;
+      const remaining = yieldAmt - s.qty_sold;
+      return `<tr>
         <td><b>${s.item_name}</b></td>
         <td>${s.batches?.date || 'N/A'}</td>
-        <td>${s.batches?.destination || 'N/A'}</td>
+        <td><span style="font-size:11px; background:var(--sage-bg); padding:2px 6px; border-radius:4px; color:var(--sage); font-weight:700;">${s.batches?.destination || 'N/A'}</span></td>
         <td>${s.qty_sold}</td>
-        <td>${(s.batches?.yield_pcs || 0) - s.qty_sold}</td>
-        <td>₱${(s.unit_price || 0).toFixed(2)}</td>
-        <td>₱${(s.total_revenue || 0).toFixed(2)}</td>
-        <td><button class="action-btn btn-del" onclick="deleteItem('sales', ${s.id})">Del</button></td>
-    </tr>`).join('');
-}
-
-async function handleSaveIngredient(event) {
-  event.preventDefault();
-  const id = document.getElementById('ing-id').value;
-  const cpu = parseFloat(document.getElementById('i-cost-bulk').value) / parseFloat(document.getElementById('i-qty-bulk').value);
-  const data = { 
-    name: document.getElementById('i-name').value, 
-    category: document.getElementById('i-category').value, 
-    unit: document.getElementById('i-unit').value, 
-    cpu, 
-    stock: parseFloat(document.getElementById('i-stock').value),
-    low_stock_threshold: parseFloat(document.getElementById('i-alert').value)
-  };
-  let { error } = id ? await _sb.from('ingredients').update(data).eq('id', id) : await _sb.from('ingredients').insert([data]);
-  if (error) alert(error.message); else { closeModal('modal-ing'); loadData(); }
-}
-
-function handleBatchSelect() {
-  const name = document.getElementById('b-name').value;
-  const manualName = document.getElementById('b-name-manual');
-  const inputs = ['b-yield', 'b-labor', 'b-overhead', 'b-packaging', 'b-markup'];
-  
-  if (name === "Others") {
-    manualName.style.display = "block";
-    inputs.forEach(id => document.getElementById(id).readOnly = false);
-  } else {
-    manualName.style.display = "none";
-    inputs.forEach(id => document.getElementById(id).readOnly = true);
-    if (name === "Cookies") { document.getElementById('b-yield').value = 15; document.getElementById('b-markup').value = 94; }
-    else if (name === "Brownies") { document.getElementById('b-yield').value = 12; document.getElementById('b-markup').value = 50; }
-  }
-  calculateBatch();
-}
-
-function addBatchIngRow() {
-  const row = document.createElement('div'); row.className = 'form-row ing-usage-row';
-  row.innerHTML = `
-    <select class="form-input use-sel" onchange="calculateBatch()" style="flex:2;">
-      <option value="">Select Ingredient</option>
-      ${ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}">${i.name}</option>`).join('')}
-    </select>
-    <input type="number" class="form-input use-qty" placeholder="Qty" oninput="calculateBatch()" style="flex:1;">
-    <button type="button" class="action-btn btn-del" onclick="this.parentElement.remove(); calculateBatch()" style="margin-bottom:15px;">×</button>`;
-  document.getElementById('batch-ing-rows').appendChild(row);
-}
-
-function calculateBatch() {
-  let ingTotal = 0;
-  document.querySelectorAll('.ing-usage-row').forEach(row => {
-    const sel = row.querySelector('.use-sel');
-    const cpu = parseFloat(sel.options[sel.selectedIndex]?.dataset.cpu || 0);
-    const qty = parseFloat(row.querySelector('.use-qty').value || 0);
-    ingTotal += cpu * qty;
-  });
-
-  const labor = parseFloat(document.getElementById('b-labor').value || 0);
-  const overhead = parseFloat(document.getElementById('b-overhead').value || 0);
-  const packaging = parseFloat(document.getElementById('b-packaging').value || 0);
-  const markup = parseFloat(document.getElementById('b-markup').value || 0);
-  const yield_pcs = parseFloat(document.getElementById('b-yield').value || 1);
-
-  const subtotal = ingTotal + labor + overhead + packaging;
-  const totalWithCafe = subtotal * 1.1; // Add 10% Cafe fee
-  const sugPrice = (totalWithCafe * (1 + (markup/100))) / yield_pcs;
-
-  document.getElementById('sum-ing').innerText = "₱" + ingTotal.toFixed(2);
-  document.getElementById('sum-op').innerText = "₱" + (labor + overhead + packaging).toFixed(2);
-  document.getElementById('sum-total').innerText = "₱" + totalWithCafe.toFixed(2);
-  document.getElementById('sum-suggested').innerText = "₱" + sugPrice.toFixed(2);
-}
-
-async function handleSaveBatch(event) {
-  event.preventDefault();
-  const name = document.getElementById('b-name').value === "Others" ? document.getElementById('b-name-manual').value : document.getElementById('b-name').value;
-  const data = { 
-    name, 
-    date: document.getElementById('b-date').value, 
-    destination: document.getElementById('b-destination').value, 
-    yield_pcs: parseFloat(document.getElementById('b-yield').value), 
-    total_cost: parseFloat(document.getElementById('sum-total').innerText.replace('₱','')), 
-    suggested_price: parseFloat(document.getElementById('sum-suggested').innerText.replace('₱','')),
-    labor_cost: parseFloat(document.getElementById('b-labor').value || 0),
-    overhead_cost: parseFloat(document.getElementById('b-overhead').value || 0)
-  };
-  const { error } = await _sb.from('batches').insert([data]);
-  if (error) alert(error.message); else { closeModal('modal-batch'); loadData(); }
-}
-
-async function openSalesModal(batchId) {
-  const b = batches.find(x => x.id === batchId);
-  const qty = prompt(`How many ${b.name} units were sold?`, b.yield_pcs);
-  if (qty) {
-    await _sb.from('sales').insert([{ 
-        batch_id: batchId, 
-        item_name: b.name, 
-        qty_sold: parseFloat(qty), 
-        unit_price: b.suggested_price, 
-        total_revenue: qty * b.suggested_price 
-    }]);
-    loadData();
+        <td style="font-weight:bold; color: ${remaining <= 5 ? 'var(--rose)' : 'var(--sage)'}">${remaining}</td>
+        <td>₱${s.unit_price.toFixed(2)}</td>
+        <td>₱${s.total_revenue.toFixed(2)}</td>
+        <td><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">No records found.</td></tr>';
   }
 }
 
-async function deleteItem(tbl, id) { if(confirm("Are you sure?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
-function clearFilters() { ['filter-from', 'filter-to', 'filter-name', 'filter-dest'].forEach(id => document.getElementById(id).value = ""); renderBatches(); }
-function openBatchModal() { document.getElementById('batch-ing-rows').innerHTML = ""; addBatchIngRow(); openModal('modal-batch'); }
-function openIngModal(id = null) { 
-    document.getElementById('ing-id').value = id || "";
-    if(!id) { document.getElementById('modal-ing-title').innerText = "Add Ingredient"; document.querySelector('#modal-ing form').reset(); }
-    else { 
-        const i = ingredients.find(x => x.id === id);
-        document.getElementById('modal-ing-title').innerText = "Edit Ingredient";
-        document.getElementById('i-name').value = i.name;
-        document.getElementById('i-category').value = i.category;
-        document.getElementById('i-unit').value = i.unit;
-        document.getElementById('i-stock').value = i.stock;
-        document.getElementById('i-alert').value = i.low_stock_threshold;
-    }
-    openModal('modal-ing'); 
-}
-function toggleIngredients() { 
-    const content = document.getElementById('ing-section-content');
-    const icon = document.getElementById('ing-toggle-icon');
-    if (content.style.maxHeight) {
-        content.style.maxHeight = null;
-        icon.innerText = "▼";
-    } else {
-        content.style.maxHeight = "500px";
-        icon.innerText = "▲";
-    }
+async function deleteItem(tbl, id) { if(confirm("Delete?")) { await _sb.from(tbl).delete().eq('id', id); loadData(); } }
+function clearFilters() {
+  ['filter-from', 'filter-to', 'filter-name', 'filter-dest'].forEach(id => document.getElementById(id).value = "");
+  renderBatches();
 }
 
 loadData();
