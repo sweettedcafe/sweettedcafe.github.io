@@ -286,6 +286,8 @@
   body.barista-mode .nav-tab.admin-only { display: none !important; }
   body.barista-mode .filter-bar .admin-only,
   body.barista-mode .admin-only { display: none !important; }
+  body.admin-mode .nav-tab.admin-only { display: inline-flex !important; }
+  body.admin-mode .admin-only { display: revert !important; }
 
   /* ─── EOD page ──────────────────────────────────── */
   .eod-table { width:100%; border-collapse:collapse; margin-top:10px; }
@@ -477,6 +479,7 @@
           </table>
         </div>
       </div>
+    </div>
 
     <!-- INGREDIENTS -->
     <div class="page" id="page-ingredients">
@@ -965,16 +968,22 @@ async function checkUser() {
   document.getElementById('app-wrapper').style.display = 'flex';
 
   if (isBarista) {
+    document.body.classList.remove('admin-mode');
     document.body.classList.add('barista-mode');
+    document.querySelectorAll('.nav-tab.admin-only').forEach(el => { el.style.display = 'none'; });
     document.getElementById('nav-eod').style.display = 'inline-flex';
     setTimeout(() => { try { showPage('eod', true); } catch(e){} }, 50);
   } else {
     // Admin: clear any stale barista flag and force ALL admin menus visible
     sessionStorage.removeItem('st_barista');
     document.body.classList.remove('barista-mode');
+    document.body.classList.add('admin-mode');
     document.getElementById('nav-eod').style.display = 'none';
-    // Defensive: explicitly un-hide every admin-only element in case CSS state lingered
-    document.querySelectorAll('.admin-only').forEach(el => { el.style.display = ''; });
+    // Defensive: explicitly un-hide every admin navigation button in case CSS state lingered
+    document.querySelectorAll('.nav-tab.admin-only').forEach(el => { el.style.display = 'inline-flex'; });
+    showPage('dashboard', true);
+    const dashBtn = document.querySelector('.nav-tab.admin-only');
+    if (dashBtn) dashBtn.classList.add('active');
   }
   loadData();
 }
@@ -2159,6 +2168,16 @@ function toggleMultiSelect(id) {
   document.getElementById(id).classList.toggle('show');
 }
 
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
 window.onclick = function (event) {
   if (!event.target.matches('.multi-select-display') && !event.target.closest('.multi-select-options')) {
     document.querySelectorAll('.multi-select-options').forEach(opt => opt.classList.remove('show'));
@@ -2215,50 +2234,88 @@ window.addEventListener('load', () => {
 
 // ─── END OF DAY (Barista) ────────────────────────────────────────────────────
 let eodInventoryRows = [];
-function initEODPage() {
+async function initEODPage() {
   // Default dates: today
   const today = new Date().toISOString().split('T')[0];
   const fromEl = document.getElementById('eod-from');
   const toEl   = document.getElementById('eod-to');
   if (fromEl && !fromEl.value) fromEl.value = today;
   if (toEl   && !toEl.value)   toEl.value   = today;
-  // Populate batch + item filters
-  const batchSel = document.getElementById('eod-batch-filter');
-  const itemSel  = document.getElementById('eod-item-filter');
-  if (batchSel) {
-    const codes = [...new Set(batches.map(b => b.batch_code).filter(Boolean))].sort();
-    batchSel.innerHTML = '<option value="">All Batches</option>' + codes.map(c => `<option value="${c}">${c}</option>`).join('');
-    batchSel.onchange = loadEODInventoryRows;
-  }
-  if (itemSel) {
-    const items = [...new Set(batches.map(b => b.name).filter(Boolean))].sort();
-    itemSel.innerHTML = '<option value="">All Items</option>' + items.map(n => `<option value="${n}">${n}</option>`).join('');
-    itemSel.onchange = loadEODInventoryRows;
-  }
+
+  // Always refresh from the batches table for the barista EOD page.
+  await loadEODBatchesFromDatabase();
+  populateEODFilters();
   loadEODInventoryRows();
 }
+
+async function loadEODBatchesFromDatabase() {
+  const { data, error } = await _sb
+    .from('batches')
+    .select('id, name, batch_code, date, created_at')
+    .not('name', 'is', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Unable to load EOD batches:', error);
+    alert('Unable to load End of Day items from batches: ' + error.message);
+    return;
+  }
+
+  batches = data || [];
+}
+
+function populateEODFilters() {
+  const batchSel = document.getElementById('eod-batch-filter');
+  const itemSel  = document.getElementById('eod-item-filter');
+  const batchCurrent = batchSel?.value || '';
+  const itemCurrent = itemSel?.value || '';
+
+  if (batchSel) {
+    const codes = [...new Set((batches || []).map(b => b.batch_code).filter(Boolean))].sort();
+    batchSel.innerHTML = '<option value="">All Batches</option>' + codes.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    if (codes.includes(batchCurrent)) batchSel.value = batchCurrent;
+    batchSel.onchange = loadEODInventoryRows;
+  }
+
+  if (itemSel) {
+    const items = [...new Set((batches || []).map(b => b.name).filter(Boolean))].sort();
+    itemSel.innerHTML = '<option value="">All Items</option>' + items.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+    if (items.includes(itemCurrent)) itemSel.value = itemCurrent;
+    itemSel.onchange = loadEODInventoryRows;
+  }
+}
+
 function loadEODInventoryRows() {
   const tbody = document.getElementById('eod-inv-body');
   if (!tbody) return;
-  // Pull item list from the BATCHES table (per requirement).
-  // Apply batch-code and item filters if set.
+
+  // Source is the batches table. SQL equivalent:
+  // SELECT id, name, batch_code, date, created_at
+  // FROM public.batches
+  // WHERE name IS NOT NULL
+  // ORDER BY created_at DESC;
   const batchF = (document.getElementById('eod-batch-filter')?.value || '').trim();
   const itemF  = (document.getElementById('eod-item-filter')?.value  || '').trim();
   let source = (batches || []).filter(b => b && b.name);
   if (batchF) source = source.filter(b => (b.batch_code || '') === batchF);
   if (itemF)  source = source.filter(b => b.name === itemF);
-  // De-duplicate by item name (a name can appear in many batches)
+
+  // De-duplicate by item name so each item appears once, even across many batches.
   const seen = new Set();
   const items = [];
-  source.forEach(b => { if (!seen.has(b.name)) { seen.add(b.name); items.push(b); } });
+  source.forEach(b => {
+    const key = String(b.name).trim().toLowerCase();
+    if (!seen.has(key)) { seen.add(key); items.push(b); }
+  });
 
   if (!items.length) {
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:14px;">No items found in batches table for the selected filters.</td></tr>';
     return;
   }
+
   tbody.innerHTML = items.map((b, i) => `
-    <tr data-idx="${i}" data-name="${b.name.replace(/"/g,'&quot;')}">
-      <td><b>${b.name}</b>${b.batch_code ? ` <span style="color:var(--text-muted); font-size:11px;">(${b.batch_code})</span>` : ''}</td>
+    <tr data-idx="${i}" data-name="${escapeHtml(b.name)}">
+      <td><b>${escapeHtml(b.name)}</b>${b.batch_code ? ` <span style="color:var(--text-muted); font-size:11px;">(${escapeHtml(b.batch_code)})</span>` : ''}</td>
       <td><input type="number" min="0" step="any" class="eod-start" oninput="recomputeEODRow(this)"></td>
       <td><input type="number" min="0" step="any" class="eod-end" oninput="recomputeEODRow(this)"></td>
       <td class="computed eod-left">—</td>
