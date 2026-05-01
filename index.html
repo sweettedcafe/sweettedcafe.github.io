@@ -645,7 +645,7 @@
         <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Price modifier is added to base price/pc at the POS.</div>
       </div>
 
-      <div class="form-row"><div class="form-group"><label class="form-label">MARKUP %</label><input type="number" id="b-markup" class="form-input" value="40" oninput="calculateBatch()"></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">MARKUP %</label><input type="number" id="b-markup" class="form-input" value="40" step="0.01" min="0" oninput="calculateBatch()"></div></div>
       <div class="summary-box">
         <div class="summary-item"><span>Ingredient</span><span id="sum-ing">₱0.00</span></div>
         <div class="summary-item"><span>Labor</span><span id="sum-labor">₱0.00</span></div>
