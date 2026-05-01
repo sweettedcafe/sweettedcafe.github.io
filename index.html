@@ -949,20 +949,32 @@ async function handleBaristaLogin() {
   location.reload();
 }
 
+// Admin email — this account ALWAYS gets full admin access regardless of any flags
+const ADMIN_EMAIL = 'sweetted20@gmail.com';
+
 async function checkUser() {
   const { data: { user } } = await _sb.auth.getUser();
   if (!user) return; // stay on login screen
-  const isBarista = sessionStorage.getItem('st_barista') === '1';
+  const email = (user.email || '').toLowerCase().trim();
+  const isAdmin = email === ADMIN_EMAIL.toLowerCase();
+  // Admin email is ALWAYS admin (overrides any stale barista flag).
+  // Anyone else who is signed in via the Barista form is treated as barista.
+  const isBarista = !isAdmin && sessionStorage.getItem('st_barista') === '1';
+
   document.getElementById('auth-container').style.display = 'none';
   document.getElementById('app-wrapper').style.display = 'flex';
+
   if (isBarista) {
     document.body.classList.add('barista-mode');
     document.getElementById('nav-eod').style.display = 'inline-flex';
     setTimeout(() => { try { showPage('eod', true); } catch(e){} }, 50);
   } else {
-    // Admin: force all admin menus visible
+    // Admin: clear any stale barista flag and force ALL admin menus visible
+    sessionStorage.removeItem('st_barista');
     document.body.classList.remove('barista-mode');
     document.getElementById('nav-eod').style.display = 'none';
+    // Defensive: explicitly un-hide every admin-only element in case CSS state lingered
+    document.querySelectorAll('.admin-only').forEach(el => { el.style.display = ''; });
   }
   loadData();
 }
@@ -2216,19 +2228,37 @@ function initEODPage() {
   if (batchSel) {
     const codes = [...new Set(batches.map(b => b.batch_code).filter(Boolean))].sort();
     batchSel.innerHTML = '<option value="">All Batches</option>' + codes.map(c => `<option value="${c}">${c}</option>`).join('');
+    batchSel.onchange = loadEODInventoryRows;
   }
   if (itemSel) {
-    const items = [...new Set([...batches.map(b => b.name), ...allSalesData.map(s => s.item_name)].filter(Boolean))].sort();
+    const items = [...new Set(batches.map(b => b.name).filter(Boolean))].sort();
     itemSel.innerHTML = '<option value="">All Items</option>' + items.map(n => `<option value="${n}">${n}</option>`).join('');
+    itemSel.onchange = loadEODInventoryRows;
   }
   loadEODInventoryRows();
 }
 function loadEODInventoryRows() {
   const tbody = document.getElementById('eod-inv-body');
   if (!tbody) return;
-  tbody.innerHTML = ingredients.map((ing, i) => `
-    <tr data-idx="${i}">
-      <td><b>${ing.name}</b> <span style="color:var(--text-muted); font-size:11px;">(${ing.unit || ''})</span></td>
+  // Pull item list from the BATCHES table (per requirement).
+  // Apply batch-code and item filters if set.
+  const batchF = (document.getElementById('eod-batch-filter')?.value || '').trim();
+  const itemF  = (document.getElementById('eod-item-filter')?.value  || '').trim();
+  let source = (batches || []).filter(b => b && b.name);
+  if (batchF) source = source.filter(b => (b.batch_code || '') === batchF);
+  if (itemF)  source = source.filter(b => b.name === itemF);
+  // De-duplicate by item name (a name can appear in many batches)
+  const seen = new Set();
+  const items = [];
+  source.forEach(b => { if (!seen.has(b.name)) { seen.add(b.name); items.push(b); } });
+
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:14px;">No items found in batches table for the selected filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = items.map((b, i) => `
+    <tr data-idx="${i}" data-name="${b.name.replace(/"/g,'&quot;')}">
+      <td><b>${b.name}</b>${b.batch_code ? ` <span style="color:var(--text-muted); font-size:11px;">(${b.batch_code})</span>` : ''}</td>
       <td><input type="number" min="0" step="any" class="eod-start" oninput="recomputeEODRow(this)"></td>
       <td><input type="number" min="0" step="any" class="eod-end" oninput="recomputeEODRow(this)"></td>
       <td class="computed eod-left">—</td>
