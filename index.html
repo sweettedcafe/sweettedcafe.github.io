@@ -1455,7 +1455,7 @@ function renderSales(sData) {
     <div style="display:flex;justify-content:space-between;border-top:2px solid #ddd;padding-top:5px;"><b>Total Cost:</b><b>₱${tTotalCost.toFixed(2)}</b></div>
   </div>`;
   const printDate = document.getElementById('print-date');
-  if (printDate) printDate.innerText = new Date().toLocaleDateString('en-PH', { dateStyle: 'long', timeStyle: 'short' });
+  if (printDate) printDate.innerText = new Date().toLocaleString('en-PH', { dateStyle: 'long', timeStyle: 'short' });
   const printTotal = document.getElementById('print-total-sales');
   if (printTotal) printTotal.innerText = 'Grand Total Revenue: ₱' + totalRev.toLocaleString(undefined, { minimumFractionDigits: 2 });
 }
