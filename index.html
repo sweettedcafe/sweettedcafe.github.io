@@ -771,10 +771,11 @@
           <input type="text" id="b-name-manual" class="form-input" placeholder="Enter custom name" style="display:none; margin-top:-10px;">
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group"><label class="form-label">DATE</label><input type="date" id="b-date" class="form-input" required onchange="updateBatchCodePreview()"></div>
-        <div class="form-group"><label class="form-label">YIELD (PCS)</label><input type="number" id="b-yield" class="form-input" oninput="scaleBatchIngredientsToYield(this); calculateBatch(); checkFlavorYieldSum();" required></div>
-      </div>
+       <div class="form-row">
+         <div class="form-group"><label class="form-label">DATE</label><input type="date" id="b-date" class="form-input" required onchange="updateBatchCodePreview()"></div>
+         <div class="form-group"><label class="form-label">RECIPE YIELD (REF.)</label><input type="number" id="b-recipe-yield" class="form-input" oninput="rescaleIngredientsForBatchYield(); calculateBatch();" required title="The fixed yield that the ingredient amounts below were measured for"></div>
+         <div class="form-group"><label class="form-label">BATCH YIELD (PCS)</label><input type="number" id="b-yield" class="form-input" oninput="rescaleIngredientsForBatchYield(); calculateBatch(); checkFlavorYieldSum();" required title="How many pieces this specific batch will produce"></div>
+       </div>
       <div class="form-group" style="margin-bottom:15px;">
         <label class="form-label">BATCH ID (auto-generated)</label>
         <div id="batch-code-preview" style="font-family:monospace; font-size:13px; background:var(--gold-bg); border:1px solid #e0d080; border-radius:8px; padding:10px; color:var(--gold); font-weight:700; letter-spacing:0.05em;">Select a date to generate</div>
@@ -1341,24 +1342,34 @@ function handleBatchSelect() {
   if (name === 'Others') {
     manualName.style.display = 'block';
     document.getElementById('b-yield').value = 1;
+    document.getElementById('b-recipe-yield').value = 1;
     document.getElementById('b-markup').value = 40;
   } else {
     manualName.style.display = 'none';
-    if (name === 'Cookies') { document.getElementById('b-yield').value = 15; document.getElementById('b-markup').value = 94; }
-    else if (name === 'Cookies Premium') { document.getElementById('b-yield').value = 15; document.getElementById('b-markup').value = 87; }
-    else if (name === 'Brownies') { document.getElementById('b-yield').value = 12; document.getElementById('b-markup').value = 50; }
-    else if (name === 'Crinkles') { document.getElementById('b-yield').value = 10; document.getElementById('b-markup').value = 53; }
+    if (name === 'Cookies')              { document.getElementById('b-yield').value = 15; document.getElementById('b-recipe-yield').value = 15; document.getElementById('b-markup').value = 94; }
+    else if (name === 'Cookies Premium') { document.getElementById('b-yield').value = 15; document.getElementById('b-recipe-yield').value = 15; document.getElementById('b-markup').value = 87; }
+    else if (name === 'Brownies')        { document.getElementById('b-yield').value = 12; document.getElementById('b-recipe-yield').value = 12; document.getElementById('b-markup').value = 50; }
+    else if (name === 'Crinkles')        { document.getElementById('b-yield').value = 10; document.getElementById('b-recipe-yield').value = 10; document.getElementById('b-markup').value = 53; }
   }
-  setBatchYieldBaseline();
+  rescaleIngredientsForBatchYield();
   calculateBatch();
 }
 
-function addBatchIngRow(ingId = null, qty = null) {
+function addBatchIngRow(ingId = null, recipeQty = null) {
   const row = document.createElement('div');
   row.className = 'form-row ing-usage-row';
   row.style.cssText = 'align-items:center; gap:8px; margin-bottom:10px;';
   const opts = ingredients.map(i => `<option value="${i.id}" data-cpu="${i.cpu}" ${i.id == ingId ? 'selected' : ''}>${i.name}</option>`).join('');
-  row.innerHTML = `<select class="form-input use-sel" style="flex:2; margin-bottom:0;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select><input type="number" step="any" class="form-input use-qty" style="flex:1; margin-bottom:0;" value="${qty || ''}" oninput="calculateBatch()"><button type="button" style="background:none; border:none; cursor:pointer; font-size:18px; color:var(--rose);" onclick="this.parentElement.remove(); calculateBatch();">×</button>`;
+  // Compute the displayed (scaled) qty from the recipe qty using current ratio.
+  const recipeY = parseFloat(document.getElementById('b-recipe-yield')?.value) || 0;
+  const batchY  = parseFloat(document.getElementById('b-yield')?.value) || 0;
+  const ratio   = (recipeY > 0 && batchY > 0) ? (batchY / recipeY) : 1;
+  const recipeQ = (recipeQty != null && recipeQty !== '') ? parseFloat(recipeQty) : null;
+  const displayedQ = recipeQ != null ? Math.round(recipeQ * ratio * 10000) / 10000 : '';
+  row.innerHTML = `<select class="form-input use-sel" style="flex:2; margin-bottom:0;" onchange="calculateBatch()"><option value="">Select</option>${opts}</select><input type="number" step="any" class="form-input use-qty" style="flex:1; margin-bottom:0;" value="${displayedQ}" oninput="onIngredientQtyEdited(this); calculateBatch();"><button type="button" style="background:none; border:none; cursor:pointer; font-size:18px; color:var(--rose);" onclick="this.parentElement.remove(); calculateBatch();">×</button>`;
+  // Persist the recipe qty on the qty input's dataset (source of truth for scaling).
+  const qtyEl = row.querySelector('.use-qty');
+  qtyEl.dataset.recipeQty = (recipeQ != null) ? String(recipeQ) : '';
   document.getElementById('batch-ing-rows').appendChild(row);
 }
 
@@ -1392,31 +1403,35 @@ function calculateBatch() {
   document.getElementById('sum-suggested').innerText = '₱' + (finalSalesTotal / yieldPcs).toFixed(2);
 }
 
-// Auto-scale ingredient quantities proportionally when YIELD changes.
-// Uses the yield input's data-prev-yield as the baseline. Updates baseline after scaling.
-function scaleBatchIngredientsToYield(yieldInput) {
-  const newY = parseFloat(yieldInput.value);
-  const prevY = parseFloat(yieldInput.dataset.prevYield);
-  if (!newY || newY <= 0 || !prevY || prevY <= 0 || newY === prevY) {
-    if (newY > 0) yieldInput.dataset.prevYield = String(newY);
-    return;
-  }
-  const factor = newY / prevY;
+// ---- Recipe-yield based ingredient scaling ----
+// Source of truth: each .use-qty input carries data-recipe-qty (the amount
+// for the fixed recipe yield). The displayed value = recipe_qty * (batch / recipe).
+
+// Recompute every displayed ingredient qty from its stored recipe_qty.
+// Triggered when batch yield OR recipe yield changes.
+function rescaleIngredientsForBatchYield() {
+  const recipeY = parseFloat(document.getElementById('b-recipe-yield')?.value);
+  const batchY  = parseFloat(document.getElementById('b-yield')?.value);
+  if (!recipeY || recipeY <= 0 || !batchY || batchY <= 0) return;
+  const ratio = batchY / recipeY;
   document.querySelectorAll('.ing-usage-row .use-qty').forEach(qtyEl => {
-    const cur = parseFloat(qtyEl.value);
-    if (!isNaN(cur) && cur > 0) {
-      const scaled = cur * factor;
-      // Round to 4 decimals to avoid float noise
-      qtyEl.value = Math.round(scaled * 10000) / 10000;
+    const recipeQ = parseFloat(qtyEl.dataset.recipeQty);
+    if (!isNaN(recipeQ) && recipeQ > 0) {
+      qtyEl.value = Math.round(recipeQ * ratio * 10000) / 10000;
     }
   });
-  yieldInput.dataset.prevYield = String(newY);
 }
 
-// Set the baseline yield used for ingredient auto-scaling.
-function setBatchYieldBaseline() {
-  const el = document.getElementById('b-yield');
-  if (el) el.dataset.prevYield = el.value || '';
+// When the user manually edits an ingredient qty, treat it as a correction
+// to the recipe baseline (so future yield changes scale correctly).
+// recipe_qty = displayed * (recipe / batch)
+function onIngredientQtyEdited(qtyEl) {
+  const recipeY = parseFloat(document.getElementById('b-recipe-yield')?.value);
+  const batchY  = parseFloat(document.getElementById('b-yield')?.value);
+  const displayed = parseFloat(qtyEl.value);
+  if (!recipeY || recipeY <= 0 || !batchY || batchY <= 0 || isNaN(displayed)) return;
+  const recipeQ = displayed * (recipeY / batchY);
+  qtyEl.dataset.recipeQty = String(Math.round(recipeQ * 10000) / 10000);
 }
 
 async function handleSaveBatch(event) {
@@ -1427,12 +1442,22 @@ async function handleSaveBatch(event) {
   const date = document.getElementById('b-date').value;
   const ingredientsUsed = [];
   document.querySelectorAll('.ing-usage-row').forEach(row => {
-    const sel = row.querySelector('.use-sel'), q = parseFloat(row.querySelector('.use-qty').value);
-    if (sel.value && q > 0) ingredientsUsed.push({ id: sel.value, name: ingredients.find(i => i.id == sel.value)?.name, qty: q });
+    const sel = row.querySelector('.use-sel');
+    const qtyEl = row.querySelector('.use-qty');
+    const q = parseFloat(qtyEl.value);
+    const rq = parseFloat(qtyEl.dataset.recipeQty);
+    if (sel.value && q > 0) ingredientsUsed.push({
+      id: sel.value,
+      name: ingredients.find(i => i.id == sel.value)?.name,
+      qty: q,
+      recipe_qty: !isNaN(rq) && rq > 0 ? rq : q
+    });
   });
+  const recipeYieldVal = parseFloat(document.getElementById('b-recipe-yield').value);
   const data = {
     name: finalName, date,
     yield_pcs: parseFloat(document.getElementById('b-yield').value),
+    recipe_yield: !isNaN(recipeYieldVal) && recipeYieldVal > 0 ? recipeYieldVal : parseFloat(document.getElementById('b-yield').value),
     labor_cost: parseFloat(document.getElementById('b-labor').value),
     overhead_cost: parseFloat(document.getElementById('b-overhead').value),
     packaging_cost: parseFloat(document.getElementById('b-packaging').value),
@@ -1466,17 +1491,19 @@ function openBatchModal(id = null, duplicate = false) {
     }
     document.getElementById('b-date').value = b.date;
     document.getElementById('b-yield').value = b.yield_pcs;
+    // Recipe yield: use stored value, or fall back to yield_pcs for legacy batches
+    document.getElementById('b-recipe-yield').value = (b.recipe_yield != null && b.recipe_yield > 0) ? b.recipe_yield : b.yield_pcs;
     document.getElementById('b-markup').value = b.markup_percent;
     document.getElementById('b-packaging').value = b.packaging_cost;
     const ingCost = b.total_cost - b.labor_cost - b.overhead_cost - b.packaging_cost;
     document.getElementById('b-labor-pct').value = ingCost > 0 ? ((b.labor_cost / ingCost) * 100).toFixed(0) : 50;
     document.getElementById('b-overhead-pct').value = ingCost > 0 ? ((b.overhead_cost / ingCost) * 100).toFixed(0) : 20;
-    if (b.ingredients_used) b.ingredients_used.forEach(ing => addBatchIngRow(ing.id, ing.qty));
+    // For legacy ingredients without recipe_qty, fall back to qty (assumes recipe_yield == yield_pcs)
+    if (b.ingredients_used) b.ingredients_used.forEach(ing => addBatchIngRow(ing.id, ing.recipe_qty != null ? ing.recipe_qty : ing.qty));
     getBatchFlavors(b).forEach(f => addFlavorRow(f.name, f.yield_pcs));
     getBatchVariants(b).forEach(v => addVariantRow(v.name, v.price_delta));
     checkFlavorYieldSum();
     document.getElementById('batch-code-preview').textContent = getBatchCode(b);
-    setBatchYieldBaseline();
     calculateBatch();
   } else {
     document.getElementById('b-date').value = new Date().toISOString().split('T')[0];
