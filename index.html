@@ -474,8 +474,15 @@
         <p style="font-size:12px; color:var(--text-muted); margin-top:5px;">Manually enter the start of day and end of shift counts for each item. "Items Used" is auto-computed.</p>
         <div style="overflow-x:auto;">
           <table class="eod-table" id="eod-inv-table">
-            <thead><tr><th>Item Name</th><th>Start of Day Count</th><th>End of Shift Count</th><th>Items Left</th><th>Items Used</th></tr></thead>
+            <thead><tr><th>Item Name</th><th>Start of Day Count</th><th>End of Shift Count</th><th>Items Left</th><th>Items Sold</th></tr></thead>
             <tbody id="eod-inv-body"></tbody>
+            <tfoot><tr style="background:var(--gold-bg); font-weight:700;">
+              <td style="text-align:right;">TOTALS</td>
+              <td id="eod-total-start" style="text-align:center;">0</td>
+              <td id="eod-total-end" style="text-align:center;">0</td>
+              <td id="eod-total-left" style="text-align:center;">0</td>
+              <td id="eod-total-sold" style="text-align:center;">0</td>
+            </tr></tfoot>
           </table>
         </div>
       </div>
@@ -546,6 +553,13 @@
           <input type="date" id="filter-to" class="form-input" style="margin-bottom:0; width:140px;" onchange="renderBatches()">
         </div>
         <button class="btn btn-ghost" style="height:38px;" onclick="clearFilters()">Clear</button>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px; margin:10px 0; padding:10px 12px; background:var(--sage-bg); border-radius:8px; flex-wrap:wrap;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="batch-select-all" onchange="toggleSelectAllBatches(this)"> Select All (page)
+        </label>
+        <span id="batch-selected-count" style="font-size:12px; color:var(--text-muted);">0 selected</span>
+        <button class="btn btn-ghost" style="background:var(--rose); color:#fff; height:34px; margin-left:auto;" onclick="bulkDeleteBatches()">🗑️ Delete Selected</button>
       </div>
       <div id="batch-list-container"></div>
       <div class="card" style="padding:15px; margin-top:-10px;">
@@ -622,10 +636,15 @@
         <strong id="sales-grand-total">₱0.00</strong>
       </div>
 
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px; padding:10px 12px; background:var(--sage-bg); border-radius:8px; flex-wrap:wrap;">
+        <span id="sales-selected-count" style="font-size:12px; color:var(--text-muted);">0 selected</span>
+        <button class="btn btn-ghost" style="background:var(--rose); color:#fff; height:34px; margin-left:auto;" onclick="bulkDeleteSales()">🗑️ Delete Selected</button>
+      </div>
+
       <div class="card" style="padding:0; overflow:hidden;">
         <div class="table-container">
           <table>
-            <thead><tr><th>Batch ID</th><th>Item</th><th>Flavor</th><th>Variant</th><th>Batch Date</th><th>Destination</th><th>Qty Sold</th><th>Remaining</th><th>Price/pc</th><th>Total</th><th>Actions</th></tr></thead>
+            <thead><tr><th style="width:30px;"><input type="checkbox" id="sales-select-all" onchange="toggleSelectAllSales(this)"></th><th>Batch ID</th><th>Item</th><th>Flavor</th><th>Variant</th><th>Batch Date</th><th>Destination</th><th>Qty Sold</th><th>Remaining</th><th>Price/pc</th><th>Total</th><th>Actions</th></tr></thead>
             <tbody id="sales-table-body"></tbody>
           </table>
         </div>
@@ -875,7 +894,7 @@ let ingredients = [], batches = [], allSalesData = [], salesChart = null;
 let selectedDashboardItems = [], selectedBatchItems = [], selectedSalesItems = [];
 let selectedDashBatchIds = [], selectedBatchIdFilters = [], selectedSalesBatchIds = [];
 let ingCurrentPage = 1, batchCurrentPage = 1, salesCurrentPage = 1;
-const ROWS_PER_PAGE_ING = 20, ROWS_PER_BATCH = 2, ROWS_PER_SALES = 20;
+const ROWS_PER_PAGE_ING = 20, ROWS_PER_BATCH = 5, ROWS_PER_SALES = 20;
 
 /*
   ┌─────────────────────────────────────────────────────────────┐
@@ -1475,11 +1494,14 @@ function _renderBatchPage() {
     return `
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;">
-          <div>
-            <h3>${b.name} ${remaining <= 0 ? '<span class="sold-out-badge">SOLD OUT</span>' : ''}</h3>
-            <div style="margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-              <span class="batch-code-badge">${bc}</span>
-              <span style="font-size:11px; color:var(--text-muted); font-weight:600;">📅 ${b.date}</span>
+          <div style="display:flex; align-items:flex-start; gap:10px;">
+            <input type="checkbox" class="batch-bulk-check" data-id="${b.id}" onchange="updateBatchSelectedCount()" style="margin-top:6px; width:18px; height:18px; cursor:pointer;">
+            <div>
+              <h3>${b.name} ${remaining <= 0 ? '<span class="sold-out-badge">SOLD OUT</span>' : ''}</h3>
+              <div style="margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <span class="batch-code-badge">${bc}</span>
+                <span style="font-size:11px; color:var(--text-muted); font-weight:600;">📅 ${b.date}</span>
+              </div>
             </div>
           </div>
           <button class="btn-sales-trigger" onclick="openSalesModal(${b.id})">+ Record Sales</button>
@@ -1512,6 +1534,8 @@ function _renderBatchPage() {
   document.getElementById('batch-page-num').innerText = `Page ${batchCurrentPage} of ${totalPages}`;
   document.getElementById('batch-prev').disabled = batchCurrentPage <= 1;
   document.getElementById('batch-next').disabled = batchCurrentPage >= totalPages;
+  const sa = document.getElementById('batch-select-all'); if (sa) sa.checked = false;
+  updateBatchSelectedCount();
 }
 
 function batchPage(dir) {
@@ -1645,6 +1669,7 @@ function renderSales(sData) {
     const remaining = batchYield - totalSoldForBatch;
     const bc = s.batches?.batch_code || generateBatchCode(s.batches?.date) || '—';
     return `<tr>
+      <td><input type="checkbox" class="sales-bulk-check" data-id="${s.id}" onchange="updateSalesSelectedCount()"></td>
       <td><span class="batch-code-badge">${bc}</span></td>
       <td><b>${s.item_name}</b></td>
       <td>${s.flavor ? `<span style="font-size:11px; background:var(--rose-bg); padding:2px 6px; border-radius:4px; color:var(--rose); font-weight:700;">${s.flavor}</span>` : '<span style="color:var(--text-muted);">—</span>'}</td>
@@ -1657,7 +1682,7 @@ function renderSales(sData) {
       <td>₱${s.total_revenue.toFixed(2)}</td>
       <td><button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button></td>
     </tr>`;
-  }).join('') || '<tr><td colspan="11" style="text-align:center; color:var(--text-muted); padding:20px;">No sales records found.</td></tr>';
+  }).join('') || '<tr><td colspan="12" style="text-align:center; color:var(--text-muted); padding:20px;">No sales records found.</td></tr>';
 
   // Grand total of ALL filtered (not just current page)
   const totalRev = sData.reduce((a, c) => a + c.total_revenue, 0);
@@ -1667,6 +1692,8 @@ function renderSales(sData) {
   document.getElementById('sales-page-num').innerText = `Page ${salesCurrentPage} of ${totalPages}`;
   document.getElementById('sales-prev').disabled = salesCurrentPage <= 1;
   document.getElementById('sales-next').disabled = salesCurrentPage >= totalPages;
+  const ssa = document.getElementById('sales-select-all'); if (ssa) ssa.checked = false;
+  updateSalesSelectedCount();
 
   // ─── Comprehensive print report ────────────────────────────
   const counts = {}, flavorCounts = {}, dests = {}, dayMap = {}, hourMap = {};
@@ -2147,6 +2174,43 @@ async function deleteItem(tbl, id) {
   if (confirm('Delete?')) { await _sb.from(tbl).delete().eq('id', id); loadData(); }
 }
 
+// ─── BULK DELETE (Batches + Sales) ─────────────────────────────────────
+function toggleSelectAllBatches(cb) {
+  document.querySelectorAll('.batch-bulk-check').forEach(c => c.checked = cb.checked);
+  updateBatchSelectedCount();
+}
+function updateBatchSelectedCount() {
+  const n = document.querySelectorAll('.batch-bulk-check:checked').length;
+  const el = document.getElementById('batch-selected-count');
+  if (el) el.innerText = `${n} selected`;
+}
+async function bulkDeleteBatches() {
+  const ids = [...document.querySelectorAll('.batch-bulk-check:checked')].map(c => Number(c.dataset.id));
+  if (!ids.length) { alert('No batches selected.'); return; }
+  if (!confirm(`Delete ${ids.length} batch(es)? This cannot be undone.`)) return;
+  const { error } = await _sb.from('batches').delete().in('id', ids);
+  if (error) { alert('Error: ' + error.message); return; }
+  loadData();
+}
+
+function toggleSelectAllSales(cb) {
+  document.querySelectorAll('.sales-bulk-check').forEach(c => c.checked = cb.checked);
+  updateSalesSelectedCount();
+}
+function updateSalesSelectedCount() {
+  const n = document.querySelectorAll('.sales-bulk-check:checked').length;
+  const el = document.getElementById('sales-selected-count');
+  if (el) el.innerText = `${n} selected`;
+}
+async function bulkDeleteSales() {
+  const ids = [...document.querySelectorAll('.sales-bulk-check:checked')].map(c => Number(c.dataset.id));
+  if (!ids.length) { alert('No sales selected.'); return; }
+  if (!confirm(`Delete ${ids.length} sale(s)? This cannot be undone.`)) return;
+  const { error } = await _sb.from('sales').delete().in('id', ids);
+  if (error) { alert('Error: ' + error.message); return; }
+  loadData();
+}
+
 function clearFilters() {
   selectedBatchItems = []; selectedBatchIdFilters = [];
   document.getElementById('filter-from').value = '';
@@ -2322,6 +2386,7 @@ function loadEODInventoryRows() {
       <td class="computed eod-used">—</td>
     </tr>
   `).join('');
+  recomputeEODTotals();
 }
 function recomputeEODRow(input) {
   const tr = input.closest('tr');
@@ -2329,6 +2394,23 @@ function recomputeEODRow(input) {
   const end   = parseFloat(tr.querySelector('.eod-end').value);
   tr.querySelector('.eod-left').innerText = isNaN(end) ? '—' : end;
   tr.querySelector('.eod-used').innerText = (isNaN(start) || isNaN(end)) ? '—' : (start - end);
+  recomputeEODTotals();
+}
+
+function recomputeEODTotals() {
+  let tStart = 0, tEnd = 0, tLeft = 0, tSold = 0;
+  document.querySelectorAll('#eod-inv-body tr').forEach(tr => {
+    const s = parseFloat(tr.querySelector('.eod-start')?.value);
+    const e = parseFloat(tr.querySelector('.eod-end')?.value);
+    if (!isNaN(s)) tStart += s;
+    if (!isNaN(e)) { tEnd += e; tLeft += e; }
+    if (!isNaN(s) && !isNaN(e)) tSold += (s - e);
+  });
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+  set('eod-total-start', tStart);
+  set('eod-total-end', tEnd);
+  set('eod-total-left', tLeft);
+  set('eod-total-sold', tSold);
 }
 
 function generateEODPDF() {
@@ -2356,87 +2438,41 @@ function generateEODPDF() {
 
   // Inventory table
   const invRows = [];
+  let tStart = 0, tEnd = 0, tLeft = 0, tSold = 0;
   document.querySelectorAll('#eod-inv-body tr').forEach(tr => {
     const cells = tr.querySelectorAll('td');
+    if (!cells.length || !tr.querySelector('.eod-start')) return;
+    const startV = parseFloat(tr.querySelector('.eod-start').value) || 0;
+    const endV   = parseFloat(tr.querySelector('.eod-end').value) || 0;
+    const leftV  = endV;
+    const soldV  = startV - endV;
+    tStart += startV; tEnd += endV; tLeft += leftV; tSold += soldV;
     invRows.push([
       cells[0].innerText,
-      tr.querySelector('.eod-start').value || '0',
-      tr.querySelector('.eod-end').value || '0',
-      cells[3].innerText,
-      cells[4].innerText
+      String(startV),
+      String(endV),
+      String(leftV),
+      String(soldV)
     ]);
   });
+  // Append totals row
+  invRows.push([
+    { content: 'TOTALS', styles: { fontStyle: 'bold', halign: 'right', fillColor: [240, 226, 178] } },
+    { content: String(tStart), styles: { fontStyle: 'bold', halign: 'center', fillColor: [240, 226, 178] } },
+    { content: String(tEnd),   styles: { fontStyle: 'bold', halign: 'center', fillColor: [240, 226, 178] } },
+    { content: String(tLeft),  styles: { fontStyle: 'bold', halign: 'center', fillColor: [240, 226, 178] } },
+    { content: String(tSold),  styles: { fontStyle: 'bold', halign: 'center', fillColor: [240, 226, 178] } }
+  ]);
   doc.setFontSize(13); doc.setTextColor(30, 45, 36);
   doc.text('Inventory Counts', 14, y); y += 4;
   doc.autoTable({
     startY: y,
-    head: [['Item', 'Start of Day', 'End of Shift', 'Items Left', 'Items Used']],
+    head: [['Item', 'Start of Day', 'End of Shift', 'Items Left', 'Items Sold']],
     body: invRows,
     styles: { fontSize: 9 },
     headStyles: { fillColor: [92, 141, 97] },
   });
   y = doc.lastAutoTable.finalY + 10;
-
-  // Filter sales
-  const fromTime = fromD ? new Date(fromD + 'T00:00:00').getTime() : 0;
-  const toTime   = toD   ? new Date(toD   + 'T23:59:59').getTime() : Date.now();
-  const filtered = allSalesData.filter(s => {
-    const t = new Date(s.created_at).getTime();
-    if (t < fromTime || t > toTime) return false;
-    if (batchF) {
-      const bc = s.batches?.batch_code || s.batch_code;
-      if (bc !== batchF) return false;
-    }
-    if (itemF && s.item_name !== itemF) return false;
-    return true;
-  });
-
-  // Sales summary
-  const totalRev = filtered.reduce((a,c) => a + c.total_revenue, 0);
-  const totalQty = filtered.reduce((a,c) => a + c.qty_sold, 0);
-  const counts = {};
-  filtered.forEach(s => { counts[s.item_name] = (counts[s.item_name] || 0) + s.qty_sold; });
-  const sortedItems = Object.entries(counts).sort((a,b) => b[1]-a[1]);
-
-  doc.setFontSize(13);
-  doc.text('Sales Summary', 14, y); y += 6;
-  doc.setFontSize(10); doc.setTextColor(60);
-  doc.text(`Total Revenue: PHP ${totalRev.toFixed(2)}`, 14, y); y += 5;
-  doc.text(`Total Items Sold: ${totalQty} pcs`, 14, y); y += 5;
-  doc.text(`Sales Records: ${filtered.length}`, 14, y); y += 8;
-
-  // Sales table
-  doc.autoTable({
-    startY: y,
-    head: [['Batch ID', 'Item', 'Flavor', 'Variant', 'Dest', 'Qty', 'Price', 'Total']],
-    body: filtered.map(s => [
-      s.batches?.batch_code || s.batch_code || '-',
-      s.item_name,
-      s.flavor || '-',
-      s.variant || '-',
-      s.destination || '-',
-      s.qty_sold,
-      'PHP ' + (s.unit_price || 0).toFixed(2),
-      'PHP ' + (s.total_revenue || 0).toFixed(2)
-    ]),
-    styles: { fontSize: 8 },
-    headStyles: { fillColor: [74, 109, 85] },
-  });
-  y = doc.lastAutoTable.finalY + 10;
-
-  // Top sellers
-  if (sortedItems.length) {
-    if (y > 250) { doc.addPage(); y = 20; }
-    doc.setFontSize(13); doc.setTextColor(30,45,36);
-    doc.text('Top Sellers (this period)', 14, y); y += 4;
-    doc.autoTable({
-      startY: y,
-      head: [['Rank', 'Item', 'Qty Sold']],
-      body: sortedItems.slice(0,5).map((e,i) => [i+1, e[0], e[1]]),
-      styles: { fontSize: 9 },
-      headStyles: { fillColor: [181, 148, 49] },
-    });
-  }
 
   doc.save(`EOD_Report_${barista.replace(/\s+/g,'_')}_${fromD}_to_${toD}.pdf`);
 }
