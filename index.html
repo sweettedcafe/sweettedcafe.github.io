@@ -611,9 +611,16 @@
             <div id="sales-batch-id-options" class="multi-select-options"></div>
           </div>
         </div>
-        <div class="filter-group">
-          <label class="form-label">Destination</label>
-          <select id="sales-filter-dest" class="form-input" style="margin-bottom:0; width:160px;" onchange="applySalesFilters()">
+         <div class="filter-group">
+           <label class="form-label">Flavor</label>
+           <div class="multi-select-container" style="width:170px;">
+             <div class="multi-select-display" onclick="toggleMultiSelect('sales-flavor-options')">All Flavors</div>
+             <div id="sales-flavor-options" class="multi-select-options"></div>
+           </div>
+         </div>
+         <div class="filter-group">
+           <label class="form-label">Destination</label>
+           <select id="sales-filter-dest" class="form-input" style="margin-bottom:0; width:160px;" onchange="applySalesFilters()">
             <option value="">All Destinations</option>
             <option value="Online Orders">Online Orders</option>
             <option value="Bevi & Go">Bevi & Go</option>
@@ -892,7 +899,7 @@ const SUPABASE_KEY = 'sb_publishable_jR5_T-YuLx1fZ_7x7K6e7w_MXypy-fS';
 const _sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let ingredients = [], batches = [], allSalesData = [], salesChart = null;
-let selectedDashboardItems = [], selectedBatchItems = [], selectedSalesItems = [];
+let selectedDashboardItems = [], selectedBatchItems = [], selectedSalesItems = [], selectedSalesFlavors = [];
 let selectedDashBatchIds = [], selectedBatchIdFilters = [], selectedSalesBatchIds = [];
 let ingCurrentPage = 1, batchCurrentPage = 1, salesCurrentPage = 1;
 const ROWS_PER_PAGE_ING = 20, ROWS_PER_BATCH = 5, ROWS_PER_SALES = 20;
@@ -1048,6 +1055,7 @@ function updateAllMultiSelects() {
   const uniqueSalesNames = [...new Set(allSalesData.map(s => s.item_name))].sort();
   const uniqueBatchCodes = [...new Set(batches.map(b => b.batch_code).filter(Boolean))].sort();
   const uniqueSalesBatchCodes = [...new Set(allSalesData.map(s => s.batches?.batch_code || s.batch_code).filter(Boolean))].sort();
+  const uniqueSalesFlavors = [...new Set(allSalesData.map(s => s.flavor).filter(Boolean))].sort();
 
   buildOptions('dash-items-options', uniqueBatchNames, selectedDashboardItems, refreshDashboard);
   buildOptions('dash-batch-id-options', uniqueBatchCodes, selectedDashBatchIds, refreshDashboard);
@@ -1055,6 +1063,7 @@ function updateAllMultiSelects() {
   buildOptions('batch-id-filter-options', uniqueBatchCodes, selectedBatchIdFilters, renderBatches);
   buildOptions('sales-items-options', uniqueSalesNames, selectedSalesItems, applySalesFilters);
   buildOptions('sales-batch-id-options', uniqueSalesBatchCodes, selectedSalesBatchIds, applySalesFilters);
+  buildOptions('sales-flavor-options', uniqueSalesFlavors, selectedSalesFlavors, applySalesFilters);
 }
 
 function buildOptions(containerId, names, selectedArray, callback) {
@@ -1088,6 +1097,7 @@ function getArrayForContainer(id) {
   if (id === 'batch-id-filter-options') return selectedBatchIdFilters;
   if (id === 'sales-items-options') return selectedSalesItems;
   if (id === 'sales-batch-id-options') return selectedSalesBatchIds;
+  if (id === 'sales-flavor-options') return selectedSalesFlavors;
   return [];
 }
 
@@ -1704,7 +1714,8 @@ function applySalesFilters() {
     const matchBatchId = selectedSalesBatchIds.length === 0 || selectedSalesBatchIds.includes(bc);
     const sDate = s.batches?.date || s.created_at?.split('T')[0];
     const matchDate = (!from || sDate >= from) && (!to || sDate <= to);
-    return matchName && matchDest && matchBatchId && matchDate;
+    const matchFlavor = selectedSalesFlavors.length === 0 || selectedSalesFlavors.includes(s.flavor);
+    return matchName && matchDest && matchBatchId && matchDate && matchFlavor;
   });
   renderSales(currentFilteredSales);
 }
@@ -1745,6 +1756,7 @@ function renderSales(sData) {
       <td>₱${s.total_revenue.toFixed(2)}</td>
       <td style="white-space:nowrap;">
         <button class="action-btn" style="background:var(--sage-bg); color:var(--sage);" title="View receipt" onclick="openSaleReceipt(${s.id})">👁 View</button>
+        <button class="action-btn" style="background:var(--gold-bg); color:var(--gold);" title="Edit sale" onclick="openEditSale(${s.id})">✎ Edit</button>
         ${refundBtn}
         <button class="action-btn btn-del" title="Void permanently" onclick="voidSale(${s.id})">✕ Void</button>
         <button class="action-btn btn-del" onclick="deleteItem('sales',${s.id})">Del</button>
@@ -2289,7 +2301,7 @@ function clearFilters() {
 }
 
 function clearSalesFilters() {
-  selectedSalesItems = []; selectedSalesBatchIds = [];
+  selectedSalesItems = []; selectedSalesBatchIds = []; selectedSalesFlavors = [];
   document.getElementById('sales-filter-dest').value = '';
   document.getElementById('sales-filter-from').value = '';
   document.getElementById('sales-filter-to').value = '';
@@ -2680,7 +2692,60 @@ async function voidSale(saleId) {
   if (error) { alert(error.message); return; }
   loadData();
 }
+
+let editingSaleId = null;
+function openEditSale(saleId) {
+  const s = allSalesData.find(x => x.id === saleId);
+  if (!s) { alert('Sale not found.'); return; }
+  editingSaleId = saleId;
+  document.getElementById('edit-sale-info').innerHTML =
+    `<b>${s.item_name}</b>${s.flavor ? ' • '+s.flavor : ''}${s.variant ? ' • '+s.variant : ''}<br>
+     <span style="font-size:12px; color:var(--text-muted);">Batch ${s.batches?.batch_code || '—'} • ${s.batches?.date || ''}</span>`;
+  document.getElementById('edit-sale-destination').value = s.destination || 'Online Orders';
+  document.getElementById('edit-sale-qty').value = s.qty_sold;
+  document.getElementById('edit-sale-price').value = s.unit_price;
+  openModal('modal-edit-sale');
+}
+
+async function saveEditSale() {
+  if (!editingSaleId) return;
+  const destination = document.getElementById('edit-sale-destination').value;
+  const qty = parseInt(document.getElementById('edit-sale-qty').value, 10);
+  const price = parseFloat(document.getElementById('edit-sale-price').value);
+  if (!qty || qty < 1) { alert('Qty must be at least 1.'); return; }
+  if (isNaN(price) || price < 0) { alert('Price must be a valid number.'); return; }
+  const total = +(qty * price).toFixed(2);
+  const { error } = await _sb.from('sales').update({
+    destination, qty_sold: qty, unit_price: price, total_revenue: total
+  }).eq('id', editingSaleId);
+  if (error) { alert(error.message); return; }
+  closeModal('modal-edit-sale');
+  editingSaleId = null;
+  loadData();
+}
 </script>
+
+<!-- Edit Sale Modal -->
+<div id="modal-edit-sale" class="modal-bg">
+  <div class="modal" style="max-width:420px;">
+    <h2 style="font-family:'Playfair Display'; margin-bottom:12px;">✎ Edit Sale</h2>
+    <div id="edit-sale-info" style="margin-bottom:14px; padding:10px; background:var(--sage-bg); border-radius:8px;"></div>
+    <label class="form-label">Destination</label>
+    <select id="edit-sale-destination" class="form-input">
+      <option value="Online Orders">Online Orders</option>
+      <option value="Bevi & Go">Bevi & Go</option>
+      <option value="Personal Consumption">Personal Consumption</option>
+    </select>
+    <label class="form-label">Qty Sold</label>
+    <input type="number" id="edit-sale-qty" class="form-input" min="1">
+    <label class="form-label">Unit Price (₱)</label>
+    <input type="number" id="edit-sale-price" class="form-input" min="0" step="0.01">
+    <div style="display:flex; gap:10px; margin-top:18px; justify-content:flex-end;">
+      <button type="button" class="btn btn-ghost" onclick="closeModal('modal-edit-sale')">Cancel</button>
+      <button type="button" class="btn btn-save" onclick="saveEditSale()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
 
 <!-- Brown Bear Mascot (dashboard only) -->
 <div id="bear-mascot" style="display:none;">
